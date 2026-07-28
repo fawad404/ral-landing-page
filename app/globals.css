@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+body {
+    font-family: var(--font-inter);
+    background-color: #F6F7F8;
+}
+
+.font-space {
+    font-family: var(--font-space);
+}
+
+.border1 {
+    border: 1px solid red;
+}
+
+.border2 {
+    border: 1px solid blue;
+}
+
+.border3 {
+    border: 1px solid green;
+}
+
+.border4 {
+    border: 1px solid yellow;
+}
+
+.border5 {
+    border: 1px solid orange;
+}
+
+
+.bgDealTopLine{
+    background: linear-gradient(90deg, rgba(9, 72, 139, 0.2) 0%, #09488B 50%, rgba(9, 72, 139, 0.2) 100%);
+}
+
+.scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}

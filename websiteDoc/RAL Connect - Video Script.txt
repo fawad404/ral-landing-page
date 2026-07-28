@@ -1,0 +1,536 @@
+================================================================
+RAL CONNECT — CLIENT VIDEO WALKTHROUGH SCRIPT
+================================================================
+Project: RAL Connect
+Prepared for: Patrick
+Version: Compliance Phase (Phase 1)
+================================================================
+
+
+================================================================
+BEFORE YOU START RECORDING — READ THIS FIRST
+================================================================
+
+This script is divided into sections. Each section is one video
+or one part of a longer video. Read the text naturally — do not
+rush. Pause at each feature so the viewer can see it clearly.
+
+----------------------------------------------------------------
+WHAT IS THE COMPLIANCE PHASE?
+----------------------------------------------------------------
+
+RAL Connect is being built in two phases.
+
+PHASE 1 — COMPLIANCE PHASE (What we are delivering today)
+This is the phase you are currently watching.
+
+The compliance phase is about helping Arizona assisted living
+facility owners and managers run their facilities correctly,
+stay on top of regulations, avoid violations, and manage their
+team and documentation properly.
+
+Think of it like the "operations backbone" of a facility.
+It handles:
+  - Who works there and what credentials they have
+  - What tasks need to be done and by when
+  - What incidents have happened and how they were handled
+  - The facility profile and all its details
+  - A daily stream of industry news and regulatory updates
+    powered by AI (the Intelligence Hub)
+
+This phase is designed so that a facility owner can log in
+every day and immediately see: Is my facility compliant?
+What is overdue? What do I need to act on today?
+
+PHASE 2 — PLACEMENT PHASE (Coming next)
+The placement phase is about connecting people. Specifically,
+it is about connecting families looking for assisted living
+placements with the right facilities, and connecting facilities
+with vendors and service providers.
+
+Think of it as the "marketplace" layer on top of the operations
+backbone. It includes:
+  - Availability tracking (how many beds are open)
+  - Inquiry management (families asking about placement)
+  - Matching engine (algorithmically matching families to facilities)
+  - Support Network (facilities finding vendors and partners)
+  - Social Boost (promoting facilities on social media)
+  - Deal Room (facility acquisition and investment deals)
+
+These features are fully built in the codebase but are hidden
+from the navigation for now. They will be turned on when we
+enter Phase 2.
+
+In short:
+  Compliance Phase = Run your facility correctly
+  Placement Phase  = Grow your facility and connect with others
+
+
+================================================================
+VIDEO 1 — INTRODUCTION TO RAL CONNECT
+================================================================
+
+Hello and welcome to RAL Connect.
+
+RAL Connect is a purpose-built SaaS platform for Arizona
+assisted living owners, managers, and vendors.
+
+The platform has three types of users:
+
+  1. ADMIN — The platform operator. Full control over everything.
+  2. FACILITY — Assisted living facility owners and managers.
+  3. VENDOR — Partners and service providers who support facilities.
+
+Each user type has their own dashboard, their own set of tools,
+and their own experience.
+
+What you are seeing today is Phase 1 — the Compliance Phase.
+This phase is focused entirely on helping facilities operate
+correctly, stay compliant, and stay informed.
+
+Let me walk you through each dashboard one by one.
+
+
+================================================================
+VIDEO 2 — ADMIN DASHBOARD WALKTHROUGH
+================================================================
+
+--- SECTION: Login ---
+
+To log in, go to the RAL Connect login page.
+Admins log in with their admin credentials.
+The system uses secure JWT authentication with a 7-day session.
+
+--- SECTION: Admin Dashboard Home ---
+
+After logging in, the admin lands on the main dashboard.
+
+At the top, you can see key platform statistics:
+  - Total users registered on the platform
+  - Total facilities in the system
+  - Total vendors registered
+  - Other summary metrics
+
+This gives the admin an instant overview of platform activity.
+
+--- SECTION: Users Management ---
+
+Click on "Users" in the left sidebar.
+
+Here the admin can see every user registered on the platform —
+facilities, vendors, and other admins.
+
+For each user, the admin can:
+  - View their profile and account details
+  - Approve a new registration
+  - Activate or deactivate an account
+  - See their role (Admin, Facility, or Vendor)
+
+When a new facility or vendor registers, they are not
+automatically active. The admin must approve them first.
+This gives the admin full control over who is on the platform.
+
+--- SECTION: Facilities Management ---
+
+Click on "Facilities" in the sidebar.
+
+This page shows every facility registered on the platform.
+
+The admin can:
+  - See all facility profiles
+  - Approve a facility for full access
+  - Flag a facility if there is a concern
+  - View the facility's full profile including photos,
+    care services, policies, and contact information
+
+Facilities must be approved before they get full access.
+This is part of the quality control process.
+
+--- SECTION: Vendors Management ---
+
+Click on "Vendors" in the sidebar.
+
+This page shows all vendor accounts on the platform.
+
+The admin can:
+  - View all vendor profiles
+  - Toggle visibility — control whether a vendor is
+    visible to facilities or hidden from the platform
+  - Edit vendor details and categories
+
+Vendors are service providers who support assisted living
+facilities — things like staffing agencies, training providers,
+medical supply companies, and so on.
+
+--- SECTION: Intelligence Hub ---
+
+Click on "Intelligence Hub" in the sidebar.
+
+This is one of the most powerful features of the platform.
+
+The Intelligence Hub is an AI-powered content engine that
+automatically monitors the Arizona assisted living market.
+
+Every 2 hours, the system:
+  1. Pulls in fresh articles and updates from 18 trusted sources
+     including ADHS, CMS, McKnight's Senior Living,
+     Senior Housing News, LeadingAge, AHCCCS, KFF, CDC,
+     Arizona Legislature news, and local Phoenix news outlets.
+
+  2. For each article, OpenAI automatically generates:
+     - A plain-English headline written for facility owners
+     - A short 2-3 sentence summary
+     - A "What This Means" section explaining the real impact
+       on Arizona assisted living owners
+     - An Operator Takeaway with one concrete action
+     - A Facebook post draft ready to copy and post
+     - An Email Blurb for newsletter use
+     - A Relevance Score from 1 to 10
+
+  3. Everything is stored and organized for admin review.
+
+On the main Intelligence Hub page, the admin can see all
+imported articles with these filters:
+  - Search by keyword
+  - Filter by Category (Arizona Regulations, Compliance,
+    ALTCS/Medicaid, Staffing, Memory Care, and more)
+  - Filter by Source (which publication it came from)
+  - Filter by Status (Pending, Processing, Processed,
+    Approved, Rejected)
+  - Filter by Priority (Critical, High, Normal)
+  - Filter by Approved status
+  - Filter by Ready to Post status
+  - Filter by Date Range
+
+--- SECTION: Intelligence Hub — Article Detail ---
+
+Click on any article to open the detail view.
+
+Here you can see the full AI output:
+  - The original article title and source
+  - The AI-generated headline
+  - The summary
+  - What This Means
+  - The Operator Takeaway
+  - The Facebook Post — with a Copy button to instantly
+    copy the text to your clipboard for posting
+  - The Email Blurb
+
+All of these fields are fully editable. If you want to
+adjust the tone or add a personal touch, just click and edit.
+
+From this page you can also:
+  - Approve or reject the article
+  - Mark it as Ready to Post
+  - Set the priority level
+  - Add internal notes
+  - Re-run the AI to generate a fresh version of the output
+
+--- SECTION: Intelligence Hub — Sources ---
+
+Click on "Sources" within the Intelligence Hub section.
+
+Here you can see all 18 RSS sources the system monitors.
+Sources are organized into three tiers:
+  - Tier 1: Core sources (ADHS, CMS, McKnight's, etc.)
+  - Tier 2: High value sources (AHCCCS, KFF, CDC, etc.)
+  - Tier 3: Local news (AZ Central, Phoenix Business Journal, etc.)
+
+The admin can:
+  - Add a new source
+  - Edit an existing source
+  - Disable a source without deleting it
+  - Toggle sources active or inactive
+
+--- SECTION: CMS Content ---
+
+Click on "CMS Content" in the sidebar.
+
+This is where the admin manages content that appears on the
+platform — announcements, pages, and other static content.
+
+--- SECTION: Reports ---
+
+Click on "Reports" in the sidebar.
+
+The reports section shows platform analytics and activity
+summaries — user growth, facility activity, compliance
+statistics, and other metrics.
+
+--- SECTION: Configuration ---
+
+Click on "Configuration" in the sidebar.
+
+Here the admin controls platform-wide settings such as
+category limits, platform rules, and system configuration.
+
+
+================================================================
+VIDEO 3 — FACILITY DASHBOARD WALKTHROUGH
+================================================================
+
+--- SECTION: Login as Facility ---
+
+Facility owners and managers log in with their facility account.
+After login, they land on their facility dashboard.
+
+--- SECTION: Facility Dashboard Home ---
+
+The facility home page gives the owner or manager an instant
+compliance overview of their facility.
+
+At the top, you can see compliance stats:
+  - Total tasks and how many are overdue
+  - Total incidents and their status
+  - Staff credentials and how many are expiring soon
+  - Overall compliance health
+
+Below the stats, there is an activity log showing recent
+actions and a compliance alerts panel that surfaces the
+most urgent items — overdue tasks, expiring credentials,
+and open incidents.
+
+This page is designed so that when a manager opens their
+laptop in the morning, they can see in 10 seconds exactly
+what needs attention today.
+
+--- SECTION: Facility Profile ---
+
+Click on "Facility Profile" in the sidebar.
+
+This is where the facility manages their full profile.
+
+The profile is organized into tabs:
+
+  Overview Tab:
+    - Facility name, description, and location
+    - Bed capacity and care level
+    - License number and type
+
+  Care Services Tab:
+    - What types of care the facility provides
+    - Specialties like memory care
+
+  Photos Tab:
+    - Upload facility photos
+    - Photos are stored securely via Cloudinary
+    - Delete photos you no longer want
+
+  Policies Tab:
+    - House rules and policies
+    - Visitor policies
+    - Other facility-specific guidelines
+
+  Contact Tab:
+    - Address, phone, email
+    - Primary contact person
+
+Changes to the profile are saved immediately. The admin
+can see and review the profile from the admin panel.
+
+--- SECTION: Compliance Center ---
+
+Click on "Compliance" in the sidebar.
+
+This is the most important section for the compliance phase.
+The Compliance Center has three tabs: Tasks, Incidents,
+and Staff Credentials.
+
+-- TASKS TAB --
+
+Tasks are the day-to-day compliance items a facility must
+complete. Examples include medication reviews, safety
+inspections, training completions, and documentation updates.
+
+On this tab, the manager can:
+  - See all tasks with their due dates and status
+  - Create a new task with a title, description,
+    assigned staff member, due date, and category
+  - Mark a task as complete
+  - Edit a task
+  - Delete a task
+
+The system automatically marks tasks as OVERDUE when their
+due date has passed without being completed. Overdue tasks
+show up as alerts on the dashboard home page.
+
+Tasks have statuses:
+  - Pending — not started
+  - In Progress — being worked on
+  - Completed — done
+  - Overdue — past the due date
+
+-- INCIDENTS TAB --
+
+Incidents are events that happen at the facility that must
+be documented. Arizona regulations require facilities to
+track and report certain types of incidents.
+
+On this tab, the manager can:
+  - Log a new incident with a title, description, date,
+    severity level, and the resident or staff member involved
+  - Update the status of an incident as it is investigated
+  - Mark an incident as resolved
+  - View the full incident history
+
+Incident severity levels:
+  - Low — minor issue, no immediate risk
+  - Medium — requires follow-up
+  - High — serious incident requiring documentation
+  - Critical — immediate action required
+
+-- STAFF CREDENTIALS TAB --
+
+Staff credentials track licenses, certifications, and
+training for every staff member at the facility.
+
+In Arizona, assisted living staff must maintain current
+licenses and certifications. Tracking expiration dates
+manually is error-prone and risky.
+
+This tab automates that.
+
+The manager can:
+  - Add a credential record for any staff member
+    (name, credential type, license number,
+    issue date, expiration date)
+  - See all credentials at a glance
+  - Instantly see which ones are expiring soon or expired
+
+The system automatically:
+  - Flags credentials as EXPIRING SOON when they are
+    within 30 days of expiration
+  - Marks credentials as EXPIRED when the date has passed
+  - Surfaces these as alerts on the dashboard home page
+
+This means the manager never has to manually check
+expiration dates. The system does it automatically.
+
+Credential statuses:
+  - Active — current and valid
+  - Expiring Soon — expires within 30 days
+  - Expired — past the expiration date
+
+
+================================================================
+VIDEO 4 — VENDOR DASHBOARD WALKTHROUGH
+================================================================
+
+--- SECTION: Login as Vendor ---
+
+Vendors log in with their vendor account.
+After login, they land on their vendor dashboard.
+
+--- SECTION: Vendor Overview ---
+
+The vendor overview page shows:
+  - Their business name and logo
+  - Account status and visibility setting
+  - A summary of their profile
+
+--- SECTION: Vendor Profile ---
+
+Click on "My Profile" in the sidebar.
+
+Vendors can manage their full business profile here:
+  - Business name and description
+  - Services they offer
+  - Contact information
+  - Logo and branding
+
+The admin controls whether a vendor is visible on the
+platform or not. Vendors can see their own visibility status.
+
+
+================================================================
+VIDEO 5 — PHASE 2 PREVIEW (What is Coming Next)
+================================================================
+
+Now that you have seen Phase 1 — the Compliance Phase —
+let me briefly explain what is coming in Phase 2.
+
+Phase 2 is the Placement Phase. This is when RAL Connect
+becomes a full marketplace and placement engine.
+
+Here is what will be unlocked:
+
+  AVAILABILITY TRACKING
+  Facilities will be able to update their available beds
+  in real time. Families and placement agents searching
+  for a facility can see which ones have openings.
+
+  INQUIRY MANAGEMENT
+  When a family reaches out about placement, the inquiry
+  is automatically captured in the system. Facilities
+  receive and respond to inquiries directly in the platform.
+
+  MATCHING ENGINE
+  The platform algorithmically matches families to the
+  right facilities based on care needs, location, budget,
+  and bed availability.
+
+  SUPPORT NETWORK
+  Facilities can browse a directory of trusted vendors
+  and service providers — staffing agencies, training
+  companies, medical suppliers, and more.
+
+  SOCIAL BOOST
+  Facilities can submit their story, photos, and updates
+  for the RAL Connect team to boost on social media.
+  This drives visibility and fills beds faster.
+
+  DEAL ROOM
+  A secure space for facility acquisition discussions,
+  investment opportunities, and business deals between
+  owners, investors, and brokers.
+
+All of these features are fully built in the backend
+right now. They are simply hidden from the navigation
+until we enter Phase 2 and turn them on.
+
+This means Phase 2 deployment will be fast — it is not
+a full rebuild. It is an activation of what is already there.
+
+
+================================================================
+VIDEO 6 — SUMMARY AND CLOSING
+================================================================
+
+Let me summarize what RAL Connect delivers today in Phase 1.
+
+FOR ADMINS:
+  - Full user management with approval workflow
+  - Facility and vendor oversight
+  - AI-powered Intelligence Hub monitoring 18 sources
+  - Automatic article processing with OpenAI
+  - Facebook post drafts, summaries, and email blurbs
+  - CMS, reports, and platform configuration
+
+FOR FACILITY OWNERS AND MANAGERS:
+  - Complete facility profile management with photos
+  - Compliance Center with Tasks, Incidents, and Credentials
+  - Automatic overdue detection and expiration alerts
+  - Dashboard home showing compliance health at a glance
+  - Clean, easy-to-use interface built for daily use
+
+FOR VENDORS:
+  - Business profile management
+  - Visibility controlled by admin
+  - Ready for Phase 2 expansion
+
+The platform is built on:
+  - NestJS backend with MongoDB
+  - Next.js 14 frontend
+  - OpenAI for Intelligence Hub AI processing
+  - Cloudinary for photo and media storage
+  - Secure JWT authentication
+
+This is a production-ready platform.
+Phase 1 is complete and ready for use.
+Phase 2 features are built and waiting to be activated.
+
+Thank you for watching. RAL Connect is ready.
+
+================================================================
+END OF SCRIPT
+================================================================
