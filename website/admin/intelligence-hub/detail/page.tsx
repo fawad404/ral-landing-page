@@ -11,7 +11,7 @@ import {
   useDeleteItem,
   useIHCategories,
 } from '@/hooks/useIntelligenceHub';
-import type { ContentStatus, PriorityLevel } from '@/types/intelligence-hub.types';
+import type { ChangeType, ContentStatus, OpportunityLevel, PriorityLevel, RiskLevel, UrgencyLevel } from '@/types/intelligence-hub.types';
 
 const STATUS_BADGE: Record<ContentStatus, string> = {
   pending:        'bg-yellow-100 text-yellow-700',
@@ -52,6 +52,80 @@ const PRIORITY_BADGE: Record<PriorityLevel, string> = {
   high: 'bg-orange-100 text-orange-600',
   critical: 'bg-red-100 text-red-600',
 };
+
+const CHANGE_TYPE_LABEL: Record<ChangeType, string> = {
+  new_regulation: 'New Regulation',
+  updated_regulation: 'Updated Regulation',
+  deadline_changed: 'Deadline Changed',
+  funding_opportunity: 'Funding Opportunity',
+  technology_release: 'Technology Release',
+  survey_guidance: 'Survey Guidance',
+  industry_trend: 'Industry Trend',
+  ownership_change: 'Ownership Change',
+  executive_appointment: 'Executive Appointment',
+  partnership_announcement: 'Partnership Announcement',
+  other: 'Other',
+};
+
+const CHANGE_TYPE_OPTIONS = (Object.keys(CHANGE_TYPE_LABEL) as ChangeType[]).map((v) => ({
+  value: v,
+  label: CHANGE_TYPE_LABEL[v],
+}));
+
+const URGENCY_LABEL: Record<UrgencyLevel, string> = {
+  immediate: 'Immediate',
+  this_week: 'This Week',
+  monitor: 'Monitor',
+  no_action: 'No Action Needed',
+};
+
+const URGENCY_BADGE: Record<UrgencyLevel, string> = {
+  immediate: 'bg-red-100 text-red-700',
+  this_week: 'bg-orange-100 text-orange-700',
+  monitor: 'bg-blue-100 text-blue-700',
+  no_action: 'bg-gray-100 text-gray-500',
+};
+
+const URGENCY_OPTIONS = (Object.keys(URGENCY_LABEL) as UrgencyLevel[]).map((v) => ({
+  value: v,
+  label: URGENCY_LABEL[v],
+}));
+
+const RISK_LABEL: Record<RiskLevel, string> = {
+  low: 'Low Risk',
+  medium: 'Medium Risk',
+  high: 'High Risk',
+  critical: 'Critical Risk',
+};
+
+const RISK_BADGE: Record<RiskLevel, string> = {
+  low: 'bg-gray-100 text-gray-600',
+  medium: 'bg-yellow-100 text-yellow-700',
+  high: 'bg-orange-100 text-orange-700',
+  critical: 'bg-red-100 text-red-700',
+};
+
+const RISK_OPTIONS = (Object.keys(RISK_LABEL) as RiskLevel[]).map((v) => ({
+  value: v,
+  label: RISK_LABEL[v],
+}));
+
+const OPPORTUNITY_LABEL: Record<OpportunityLevel, string> = {
+  low: 'Low Opportunity',
+  medium: 'Medium Opportunity',
+  high: 'High Opportunity',
+};
+
+const OPPORTUNITY_BADGE: Record<OpportunityLevel, string> = {
+  low: 'bg-gray-100 text-gray-600',
+  medium: 'bg-sky-100 text-sky-700',
+  high: 'bg-green-100 text-green-700',
+};
+
+const OPPORTUNITY_OPTIONS = (Object.keys(OPPORTUNITY_LABEL) as OpportunityLevel[]).map((v) => ({
+  value: v,
+  label: OPPORTUNITY_LABEL[v],
+}));
 
 function fmtDate(iso?: string) {
   if (!iso) return '—';
@@ -137,10 +211,15 @@ export default function AdminIntelligenceHubDetailPage({ id }: Props) {
   const [aiOperatorTakeaway, setAiOperatorTakeaway] = useState('');
   const [aiFacebookPost, setAiFacebookPost] = useState('');
   const [aiEmailBlurb, setAiEmailBlurb] = useState('');
+  const [aiWhoIsAffected, setAiWhoIsAffected] = useState('');
   const [category, setCategory] = useState('');
   const [tags, setTags] = useState('');
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<PriorityLevel>('normal');
+  const [changeType, setChangeType] = useState<ChangeType>('other');
+  const [urgency, setUrgency] = useState<UrgencyLevel>('monitor');
+  const [riskLevel, setRiskLevel] = useState<RiskLevel>('low');
+  const [opportunityLevel, setOpportunityLevel] = useState<OpportunityLevel>('low');
   const [isDirty, setIsDirty] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleDate, setScheduleDate] = useState('');
@@ -153,10 +232,15 @@ export default function AdminIntelligenceHubDetailPage({ id }: Props) {
       setAiOperatorTakeaway(item.aiOperatorTakeaway ?? '');
       setAiFacebookPost(item.aiFacebookPost ?? '');
       setAiEmailBlurb(item.aiEmailBlurb ?? '');
+      setAiWhoIsAffected(item.aiWhoIsAffected ?? '');
       setCategory(item.category ?? '');
       setTags((item.tags ?? []).join(', '));
       setNotes(item.notes ?? '');
       setPriority(item.priority ?? 'normal');
+      setChangeType(item.changeType ?? 'other');
+      setUrgency(item.urgency ?? 'monitor');
+      setRiskLevel(item.riskLevel ?? 'low');
+      setOpportunityLevel(item.opportunityLevel ?? 'low');
       setIsDirty(false);
     }
   }, [item]);
@@ -175,10 +259,15 @@ export default function AdminIntelligenceHubDetailPage({ id }: Props) {
         aiOperatorTakeaway,
         aiFacebookPost,
         aiEmailBlurb,
+        aiWhoIsAffected,
         category,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
         notes,
         priority,
+        changeType,
+        urgency,
+        riskLevel,
+        opportunityLevel,
       },
     }, {
       onSuccess: () => setIsDirty(false),
@@ -239,6 +328,31 @@ export default function AdminIntelligenceHubDetailPage({ id }: Props) {
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${PRIORITY_BADGE[item.priority]}`}>
               {item.priority} priority
             </span>
+            {item.changeType && (
+              <span className="text-xs font-semibold bg-[#EEF2FF] text-indigo-700 px-2 py-0.5 rounded-full">
+                {CHANGE_TYPE_LABEL[item.changeType]}
+              </span>
+            )}
+            {item.urgency && (
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${URGENCY_BADGE[item.urgency]}`}>
+                {URGENCY_LABEL[item.urgency]}
+              </span>
+            )}
+            {item.riskLevel && (
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${RISK_BADGE[item.riskLevel]}`}>
+                {RISK_LABEL[item.riskLevel]}
+              </span>
+            )}
+            {item.opportunityLevel && item.opportunityLevel !== 'low' && (
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${OPPORTUNITY_BADGE[item.opportunityLevel]}`}>
+                {OPPORTUNITY_LABEL[item.opportunityLevel]}
+              </span>
+            )}
+            {item.contentUpdated && (
+              <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                Content Updated
+              </span>
+            )}
             {item.isArizonaSpecific && (
               <span className="text-xs font-bold text-[#09488B] bg-[#0947871A] px-2 py-0.5 rounded-full">
                 Arizona Specific
@@ -250,6 +364,11 @@ export default function AdminIntelligenceHubDetailPage({ id }: Props) {
               </span>
             )}
           </div>
+          {item.aiWhoIsAffected && (
+            <p className="text-xs text-[#475569]">
+              <span className="font-bold text-[#64748B] uppercase tracking-wide">Who's Affected:</span> {item.aiWhoIsAffected}
+            </p>
+          )}
           <p className="text-xs text-[#94A3B8]">
             Imported {fmtDate(item.importedAt)} · Source: {item.sourceName}
             {item.scheduledFor && ` · Scheduled for ${fmtDate(item.scheduledFor)}`}
@@ -422,6 +541,46 @@ export default function AdminIntelligenceHubDetailPage({ id }: Props) {
             </div>
 
             <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-[#64748B] uppercase tracking-wide">
+                Change Type <span className="normal-case font-normal text-[#94A3B8]">(what kind of change this is — set by AI, editable)</span>
+              </label>
+              <CustomSelect
+                value={changeType}
+                onChange={(v) => { setChangeType(v as ChangeType); markDirty(); }}
+                options={CHANGE_TYPE_OPTIONS}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#64748B] uppercase tracking-wide">Urgency</label>
+                <CustomSelect
+                  value={urgency}
+                  onChange={(v) => { setUrgency(v as UrgencyLevel); markDirty(); }}
+                  options={URGENCY_OPTIONS}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#64748B] uppercase tracking-wide">Risk Level</label>
+                <CustomSelect
+                  value={riskLevel}
+                  onChange={(v) => { setRiskLevel(v as RiskLevel); markDirty(); }}
+                  options={RISK_OPTIONS}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-bold text-[#64748B] uppercase tracking-wide">Opportunity</label>
+                <CustomSelect
+                  value={opportunityLevel}
+                  onChange={(v) => { setOpportunityLevel(v as OpportunityLevel); markDirty(); }}
+                  options={OPPORTUNITY_OPTIONS}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
               <label className="text-xs font-bold text-[#64748B] uppercase tracking-wide">Tags (comma separated)</label>
               <input
                 value={tags}
@@ -545,6 +704,12 @@ export default function AdminIntelligenceHubDetailPage({ id }: Props) {
               onChange={(v) => { setAiOperatorTakeaway(v); markDirty(); }}
               multiline
               rows={3}
+            />
+
+            <EditableField
+              label="Who Is Affected"
+              value={aiWhoIsAffected}
+              onChange={(v) => { setAiWhoIsAffected(v); markDirty(); }}
             />
           </div>
 

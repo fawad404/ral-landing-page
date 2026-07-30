@@ -12,7 +12,7 @@ import {
   useUpdateItem,
   useDeleteItem,
 } from '@/hooks/useIntelligenceHub';
-import type { ContentItem, ContentItemFilters, ContentStatus, PriorityLevel } from '@/types/intelligence-hub.types';
+import type { ChangeType, ContentItem, ContentItemFilters, ContentStatus, PriorityLevel, UrgencyLevel } from '@/types/intelligence-hub.types';
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -58,6 +58,34 @@ const PRIORITY_BADGE: Record<PriorityLevel, string> = {
   normal: 'bg-gray-100 text-gray-600',
   high: 'bg-orange-100 text-orange-600',
   critical: 'bg-red-100 text-red-600',
+};
+
+const CHANGE_TYPE_LABEL: Record<ChangeType, string> = {
+  new_regulation: 'New Regulation',
+  updated_regulation: 'Updated Regulation',
+  deadline_changed: 'Deadline Changed',
+  funding_opportunity: 'Funding Opportunity',
+  technology_release: 'Technology Release',
+  survey_guidance: 'Survey Guidance',
+  industry_trend: 'Industry Trend',
+  ownership_change: 'Ownership Change',
+  executive_appointment: 'Executive Appointment',
+  partnership_announcement: 'Partnership Announcement',
+  other: 'Other',
+};
+
+const URGENCY_LABEL: Record<UrgencyLevel, string> = {
+  immediate: 'Immediate',
+  this_week: 'This Week',
+  monitor: 'Monitor',
+  no_action: 'No Action',
+};
+
+const URGENCY_BADGE: Record<UrgencyLevel, string> = {
+  immediate: 'text-red-700 bg-red-100',
+  this_week: 'text-orange-700 bg-orange-100',
+  monitor: 'text-blue-700 bg-blue-100',
+  no_action: 'text-gray-500 bg-gray-100',
 };
 
 function fmtDate(iso?: string) {
@@ -110,11 +138,28 @@ function ItemRow({
           {item.aiHeadline || item.originalTitle}
         </Link>
         <p className="text-xs text-[#64748B] mt-0.5 truncate">{item.sourceName}</p>
-        {item.isArizonaSpecific && (
-          <span className="text-[10px] font-bold text-[#09488B] bg-[#0947871A] px-1.5 py-0.5 rounded mt-0.5 inline-block">
-            AZ
-          </span>
-        )}
+        <div className="flex gap-1 flex-wrap mt-0.5">
+          {item.isArizonaSpecific && (
+            <span className="text-[10px] font-bold text-[#09488B] bg-[#0947871A] px-1.5 py-0.5 rounded inline-block">
+              AZ
+            </span>
+          )}
+          {item.changeType && item.changeType !== 'other' && (
+            <span className="text-[10px] font-semibold text-indigo-700 bg-[#EEF2FF] px-1.5 py-0.5 rounded inline-block">
+              {CHANGE_TYPE_LABEL[item.changeType]}
+            </span>
+          )}
+          {item.contentUpdated && (
+            <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded inline-block">
+              Updated
+            </span>
+          )}
+          {item.urgency && item.urgency !== 'no_action' && (
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded inline-block ${URGENCY_BADGE[item.urgency]}`}>
+              {URGENCY_LABEL[item.urgency]}
+            </span>
+          )}
+        </div>
       </td>
 
       {/* Category */}
@@ -305,6 +350,12 @@ export default function AdminIntelligenceHubPage() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Link
+            href={APP_ROUTES.ADMIN_INTELLIGENCE_HUB_SCAN_LOGS}
+            className="text-sm border border-[#E2E8F0] text-[#475569] px-4 py-2 rounded-xl hover:bg-[#F1F5F9] font-medium"
+          >
+            Scan History
+          </Link>
           <Link
             href={APP_ROUTES.ADMIN_INTELLIGENCE_HUB_SOURCES}
             className="text-sm border border-[#E2E8F0] text-[#475569] px-4 py-2 rounded-xl hover:bg-[#F1F5F9] font-medium"

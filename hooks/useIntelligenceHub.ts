@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { intelligenceHubService } from '@/services/intelligenceHubService';
-import type { ContentItemFilters, IHSource } from '@/types/intelligence-hub.types';
+import type { ContentItemFilters, IHSource, ScanLogFilters } from '@/types/intelligence-hub.types';
 
 export const IH_KEYS = {
   stats: ['ih-stats'] as const,
@@ -10,6 +10,7 @@ export const IH_KEYS = {
   sources: ['ih-sources'] as const,
   items: (filters: ContentItemFilters) => ['ih-items', filters] as const,
   item: (id: string) => ['ih-item', id] as const,
+  scanLogs: (filters: ScanLogFilters) => ['ih-scan-logs', filters] as const,
 };
 
 // ─── STATS ────────────────────────────────────────────────────────────────────
@@ -39,11 +40,11 @@ export function useTriggerIngest() {
   return useMutation({
     mutationFn: intelligenceHubService.triggerIngest,
     onSuccess: (result) => {
-      if (result.imported > 0) {
-        toast.success(
-          `Ingestion complete — ${result.imported} new article${result.imported !== 1 ? 's' : ''} imported`,
-          { duration: 5000 },
-        );
+      if (result.imported > 0 || result.modified > 0) {
+        const parts = [];
+        if (result.imported > 0) parts.push(`${result.imported} new article${result.imported !== 1 ? 's' : ''} imported`);
+        if (result.modified > 0) parts.push(`${result.modified} existing article${result.modified !== 1 ? 's' : ''} updated`);
+        toast.success(`Ingestion complete — ${parts.join(', ')}`, { duration: 5000 });
       } else {
         toast.info(
           `Nothing new — ${result.alreadyExists} already in DB, ${result.notRelevant} not relevant`,
@@ -158,6 +159,16 @@ export function useDeleteItem() {
       toast.success('Item deleted');
     },
     onError: () => toast.error('Failed to delete'),
+  });
+}
+
+// ─── SCAN LOGS ──────────────────────────────────────────────────────────────
+
+export function useScanLogs(filters: ScanLogFilters) {
+  return useQuery({
+    queryKey: IH_KEYS.scanLogs(filters),
+    queryFn: () => intelligenceHubService.getScanLogs(filters),
+    placeholderData: (prev) => prev,
   });
 }
 

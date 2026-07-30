@@ -13,8 +13,25 @@ export type ContentStatus =
   | 'published'
   | 'archived';
 export type PriorityLevel = 'normal' | 'high' | 'critical';
+export type ChangeType =
+  | 'new_regulation'
+  | 'updated_regulation'
+  | 'deadline_changed'
+  | 'funding_opportunity'
+  | 'technology_release'
+  | 'survey_guidance'
+  | 'industry_trend'
+  | 'ownership_change'
+  | 'executive_appointment'
+  | 'partnership_announcement'
+  | 'other';
+export type UrgencyLevel = 'immediate' | 'this_week' | 'monitor' | 'no_action';
+export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
+export type OpportunityLevel = 'low' | 'medium' | 'high';
 export type SourceType = 'rss' | 'scrape' | 'manual';
-export type SourceTier = 'tier1' | 'tier2' | 'tier3';
+export type SourcePriority = 'low' | 'medium' | 'high' | 'critical';
+export type TrustLevel = 'low' | 'medium' | 'high';
+export type HealthStatus = 'healthy' | 'warning' | 'failing';
 
 export interface IHSource {
   _id: string;
@@ -22,10 +39,17 @@ export interface IHSource {
   rssUrl: string;
   websiteUrl?: string;
   type: SourceType;
-  tier: SourceTier;
+  industry: string;
+  categories: string[];
+  scanFrequencyHours: number;
+  priority: SourcePriority;
+  trustLevel: TrustLevel;
   isActive: boolean;
   description?: string;
-  lastFetchedAt?: string;
+  lastScanAt?: string;
+  lastSuccessfulScanAt?: string;
+  healthStatus: HealthStatus;
+  consecutiveFailures: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,6 +76,11 @@ export interface ContentItem {
   aiFacebookPost?: string;
   aiEmailBlurb?: string;
   aiRelevanceScore?: number;
+  changeType: ChangeType;
+  aiWhoIsAffected?: string;
+  urgency: UrgencyLevel;
+  riskLevel: RiskLevel;
+  opportunityLevel: OpportunityLevel;
   // Admin fields
   reviewed: boolean;
   approved: boolean;
@@ -64,6 +93,9 @@ export interface ContentItem {
   scheduledFor?: string;
   publishedAt?: string;
   isArizonaSpecific: boolean;
+  contentHash?: string;
+  contentUpdated: boolean;
+  contentUpdatedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -91,11 +123,47 @@ export interface IHStats {
 
 export interface IngestResult {
   imported: number;
+  modified: number;
   alreadyExists: number;
   notRelevant: number;
   skipped: number;
   errors: number;
   failedSources: string[];
+}
+
+export type ScanOutcome = 'success' | 'failed';
+
+export interface ScanLog {
+  _id: string;
+  sourceId: string;
+  sourceName: string;
+  scannedAt: string;
+  outcome: ScanOutcome;
+  imported: number;
+  modified: number;
+  alreadyExists: number;
+  notRelevant: number;
+  errorMessage?: string;
+  triggeredManually: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ScanLogsResponse {
+  logs: ScanLog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ScanLogFilters {
+  sourceId?: string;
+  outcome?: ScanOutcome | '';
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
 }
 
 export interface ContentItemFilters {
@@ -104,6 +172,10 @@ export interface ContentItemFilters {
   sourceName?: string;
   status?: ContentStatus | '';
   priority?: PriorityLevel | '';
+  changeType?: ChangeType | '';
+  urgency?: UrgencyLevel | '';
+  riskLevel?: RiskLevel | '';
+  opportunityLevel?: OpportunityLevel | '';
   approved?: boolean | '';
   reviewed?: boolean | '';
   readyToPost?: boolean | '';

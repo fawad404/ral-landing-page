@@ -7,6 +7,8 @@ import type {
   IHSource,
   IHStats,
   IngestResult,
+  ScanLogFilters,
+  ScanLogsResponse,
 } from '@/types/intelligence-hub.types';
 
 export const intelligenceHubService = {
@@ -57,6 +59,10 @@ export const intelligenceHubService = {
     if (filters.sourceName) params.sourceName = filters.sourceName;
     if (filters.status) params.status = filters.status;
     if (filters.priority) params.priority = filters.priority;
+    if (filters.changeType) params.changeType = filters.changeType;
+    if (filters.urgency) params.urgency = filters.urgency;
+    if (filters.riskLevel) params.riskLevel = filters.riskLevel;
+    if (filters.opportunityLevel) params.opportunityLevel = filters.opportunityLevel;
     if (filters.approved !== '' && filters.approved !== undefined) params.approved = String(filters.approved);
     if (filters.reviewed !== '' && filters.reviewed !== undefined) params.reviewed = String(filters.reviewed);
     if (filters.readyToPost !== '' && filters.readyToPost !== undefined) params.readyToPost = String(filters.readyToPost);
@@ -85,6 +91,20 @@ export const intelligenceHubService = {
 
   reprocessItem: async (id: string): Promise<ContentItem> => {
     const res = await apiClient.post<ContentItem>(API_ENDPOINTS.IH_ITEM_REPROCESS(id));
+    return res.data;
+  },
+
+  // Scan logs
+  getScanLogs: async (filters: ScanLogFilters = {}): Promise<ScanLogsResponse> => {
+    const params: Record<string, any> = {};
+    if (filters.sourceId) params.sourceId = filters.sourceId;
+    if (filters.outcome) params.outcome = filters.outcome;
+    if (filters.dateFrom) params.dateFrom = filters.dateFrom;
+    if (filters.dateTo) params.dateTo = filters.dateTo;
+    if (filters.page) params.page = filters.page;
+    if (filters.limit) params.limit = filters.limit;
+
+    const res = await apiClient.get<ScanLogsResponse>(API_ENDPOINTS.IH_SCAN_LOGS, { params });
     return res.data;
   },
 };

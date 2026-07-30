@@ -101,6 +101,7 @@ export const API_ENDPOINTS = {
   IH_ITEMS: '/intelligence-hub/items',
   IH_ITEM_BY_ID: (id: string) => `/intelligence-hub/items/${id}`,
   IH_ITEM_REPROCESS: (id: string) => `/intelligence-hub/items/${id}/reprocess`,
+  IH_SCAN_LOGS: '/intelligence-hub/scan-logs',
 
   // Leads (Landing Page Submissions)
   LEADS: '/leads',
@@ -153,6 +154,7 @@ export const APP_ROUTES = {
   ADMIN_INTELLIGENCE_HUB: '/admin/intelligence-hub',
   ADMIN_INTELLIGENCE_HUB_ITEM: (id: string) => `/admin/intelligence-hub/${id}`,
   ADMIN_INTELLIGENCE_HUB_SOURCES: '/admin/intelligence-hub/sources',
+  ADMIN_INTELLIGENCE_HUB_SCAN_LOGS: '/admin/intelligence-hub/scan-logs',
   ADMIN_NEWSLETTER: '/admin/newsletter',
 
   ADMIN_LEADS: '/admin/leads',
