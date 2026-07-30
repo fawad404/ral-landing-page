@@ -1,6 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
-import { ContentStatus, PriorityLevel } from '../schemas/content-item.schema';
+import {
+  ChangeType,
+  ContentStatus,
+  OpportunityLevel,
+  PriorityLevel,
+  RiskLevel,
+  UrgencyLevel,
+} from '../schemas/content-item.schema';
 
 export class UpdateContentItemDto {
   @ApiPropertyOptional()
@@ -58,6 +65,31 @@ export class UpdateContentItemDto {
   @IsOptional()
   @IsEnum(PriorityLevel)
   priority?: PriorityLevel;
+
+  @ApiPropertyOptional({ enum: ChangeType, description: 'What kind of change this article represents' })
+  @IsOptional()
+  @IsEnum(ChangeType)
+  changeType?: ChangeType;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  aiWhoIsAffected?: string;
+
+  @ApiPropertyOptional({ enum: UrgencyLevel })
+  @IsOptional()
+  @IsEnum(UrgencyLevel)
+  urgency?: UrgencyLevel;
+
+  @ApiPropertyOptional({ enum: RiskLevel })
+  @IsOptional()
+  @IsEnum(RiskLevel)
+  riskLevel?: RiskLevel;
+
+  @ApiPropertyOptional({ enum: OpportunityLevel })
+  @IsOptional()
+  @IsEnum(OpportunityLevel)
+  opportunityLevel?: OpportunityLevel;
 
   @ApiPropertyOptional()
   @IsOptional()

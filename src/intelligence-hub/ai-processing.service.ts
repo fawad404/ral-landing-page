@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI, { APIError } from 'openai';
+import { CATEGORIES } from './categories';
 
 export interface AiOutput {
   headline: string;
@@ -10,7 +11,34 @@ export interface AiOutput {
   facebook_post: string;
   email_blurb: string;
   relevance_score: number;
+  change_type: string;
+  category: string;
+  who_is_affected: string;
+  urgency: string;
+  risk_level: string;
+  opportunity_level: string;
 }
+
+// Must match the ChangeType enum values in schemas/content-item.schema.ts
+export const VALID_CHANGE_TYPES = [
+  'new_regulation',
+  'updated_regulation',
+  'deadline_changed',
+  'funding_opportunity',
+  'technology_release',
+  'survey_guidance',
+  'industry_trend',
+  'ownership_change',
+  'executive_appointment',
+  'partnership_announcement',
+  'other',
+];
+
+// Must match the UrgencyLevel / RiskLevel / OpportunityLevel enum values in
+// schemas/content-item.schema.ts
+export const VALID_URGENCY_LEVELS = ['immediate', 'this_week', 'monitor', 'no_action'];
+export const VALID_RISK_LEVELS = ['low', 'medium', 'high', 'critical'];
+export const VALID_OPPORTUNITY_LEVELS = ['low', 'medium', 'high'];
 
 export class AiProcessingError extends Error {
   constructor(
@@ -140,6 +168,29 @@ DATE:
 ${date}
 
 ---
+Also classify what KIND of change this article represents — not just what it's about, but what actually happened. Pick exactly one value from this list (use the exact lowercase_underscore token):
+- "new_regulation" — a brand-new rule, requirement, or regulation is being introduced
+- "updated_regulation" — an existing rule, requirement, deadline-independent regulation, or policy was changed/amended
+- "deadline_changed" — a compliance, filing, or application deadline was moved, extended, or newly set
+- "funding_opportunity" — a grant, subsidy, reimbursement program, or other funding became available
+- "technology_release" — a new tool, software, or technology relevant to operators was released
+- "survey_guidance" — new or updated guidance about state/ADHS surveys or inspections
+- "industry_trend" — data, statistics, or commentary describing a broader trend (occupancy, market, workforce, etc.) rather than a specific event
+- "ownership_change" — a facility, company, or organization was acquired, sold, or merged
+- "executive_appointment" — a person was named, hired, promoted, or appointed to a leadership role
+- "partnership_announcement" — two organizations announced a partnership or collaboration
+- "other" — none of the above fit
+
+Also pick the single best-fitting topic category from this exact list (use the exact text, do not invent a new one):
+${CATEGORIES.map((c) => `- "${c}"`).join('\n')}
+
+Also determine:
+- Who is affected: a short phrase naming who this impacts (e.g. "Facility owners and administrators", "Direct care staff", "Families and residents", "Facilities using ALTCS reimbursement"). Be specific, not generic.
+- Urgency — pick exactly one token: "immediate" (act today), "this_week" (act within the week), "monitor" (keep an eye on it, no action yet), or "no_action" (informational only, nothing to do)
+- Risk level — pick exactly one token: "low", "medium", "high", or "critical" — how much compliance/operational/legal risk this poses if ignored
+- Opportunity level — pick exactly one token: "low", "medium", or "high" — how much upside/benefit/growth potential this represents for an operator who acts on it
+
+---
 Return ONLY valid JSON with exactly these fields:
 {
   "headline": "Plain-English headline written for a facility owner, not a journalist. Make it specific and useful.",
@@ -148,7 +199,13 @@ Return ONLY valid JSON with exactly these fields:
   "operator_takeaway": "One concrete action or thing to watch. Start with a verb. Example: 'Review your medication documentation before your next ADHS inspection.' If no action is needed, say why.",
   "facebook_post": "Write a post for an Arizona assisted living Facebook group. Start with a hook that makes operators stop scrolling. Explain what happened in plain English. Say why it matters to them. End with a question to spark comments. Conversational, not corporate. No hashtags. 150-250 words.",
   "email_blurb": "2-3 sentences for an email newsletter. Plain language. Mention Arizona if relevant. End with one clear takeaway.",
-  "relevance_score": <integer 1-10: 10 = directly affects Arizona ALF compliance or operations today, 1 = completely unrelated>
+  "category": "<one exact category from the list above>",
+  "who_is_affected": "<short phrase>",
+  "urgency": "<one of: immediate, this_week, monitor, no_action>",
+  "risk_level": "<one of: low, medium, high, critical>",
+  "opportunity_level": "<one of: low, medium, high>",
+  "relevance_score": <integer 1-10: 10 = directly affects Arizona ALF compliance or operations today, 1 = completely unrelated>,
+  "change_type": "<one of the exact tokens listed above>"
 }`;
 
     let response: OpenAI.Chat.ChatCompletion;

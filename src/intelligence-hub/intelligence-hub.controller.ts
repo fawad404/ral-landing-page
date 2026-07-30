@@ -20,6 +20,7 @@ import { CreateSourceDto } from './dto/create-source.dto';
 import { UpdateSourceDto } from './dto/update-source.dto';
 import { QueryContentDto } from './dto/query-content.dto';
 import { UpdateContentItemDto } from './dto/update-content-item.dto';
+import { QueryScanLogDto } from './dto/query-scan-log.dto';
 
 @ApiTags('Intelligence Hub (Admin)')
 @ApiBearerAuth('JWT-auth')
@@ -49,6 +50,14 @@ export class IntelligenceHubController {
   @ApiOperation({ summary: 'Manually trigger feed ingestion across all active sources' })
   triggerIngest() {
     return this.service.triggerIngest();
+  }
+
+  // ─── SCAN LOGS ────────────────────────────────────────────────────────────
+
+  @Get('scan-logs')
+  @ApiOperation({ summary: 'List scan history — which sources were scanned, which failed, which produced new content' })
+  getScanLogs(@Query() query: QueryScanLogDto) {
+    return this.service.getScanLogs(query);
   }
 
   // ─── SOURCES ──────────────────────────────────────────────────────────────

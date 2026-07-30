@@ -1,44 +1,30 @@
 import { HttpException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Source, SourceDocument, SourceTier, SourceType } from './schemas/source.schema';
+import { Source, SourceDocument, SourcePriority, SourceType, TrustLevel } from './schemas/source.schema';
 import { ContentItem, ContentItemDocument, ContentStatus } from './schemas/content-item.schema';
+import { ScanLog, ScanLogDocument } from './schemas/scan-log.schema';
 import { CreateSourceDto } from './dto/create-source.dto';
 import { UpdateSourceDto } from './dto/update-source.dto';
 import { QueryContentDto } from './dto/query-content.dto';
 import { UpdateContentItemDto } from './dto/update-content-item.dto';
+import { QueryScanLogDto } from './dto/query-scan-log.dto';
 import { FeedIngestionService } from './feed-ingestion.service';
 import { AiProcessingError } from './ai-processing.service';
+import { CATEGORIES } from './categories';
 
-export const CATEGORIES = [
-  // ── Original categories ───────────────────────────────────────────────────
-  'Arizona Regulations',
-  'Compliance & Licensing',
-  'Assisted Living Operations',
-  'ALTCS / Medicaid',
-  'Staffing & Caregivers',
-  'Residential Assisted Living',
-  'Memory Care',
-  'Senior Care Industry News',
-  'Risk / Legal / Liability',
-  'Manager Insights',
-  'Market Trends',
-  // ── Newsletter aggregator categories (Phase 2) ────────────────────────────
-  'Compliance & Regulatory',
-  'Staffing & Caregiver News',
-  'Industry News & Operations',
-  'Emergency & Safety Alerts',
-  'Law / Policy / ALTCS Updates',
-];
+export { CATEGORIES };
 
 const DEFAULT_SOURCES = [
-  // Tier 1 — Core
+  // ── Core government / official sources ────────────────────────────────────
   {
     name: 'ADHS Newsroom',
     rssUrl: 'https://news.google.com/rss/search?q=%22Arizona+Department+of+Health%22+%22assisted+living%22+OR+%22long-term+care%22+OR+licensing+OR+%22care+facility%22',
     websiteUrl: 'https://www.azdhs.gov/news/index.php',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.CRITICAL,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Compliance & Regulatory', 'Arizona Regulations'],
     description: 'Arizona Department of Health Services — regulations, licensing, policy (via Google News)',
   },
   {
@@ -46,7 +32,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=site%3Amcknightsseniorliving.com',
     websiteUrl: 'https://www.mcknightsseniorliving.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.HIGH,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Industry News & Operations', 'Staffing & Caregiver News'],
     description: 'Daily senior living news, staffing, operations, regulatory changes (via Google News)',
   },
   {
@@ -54,7 +42,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://seniorhousingnews.com/feed/',
     websiteUrl: 'https://seniorhousingnews.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.HIGH,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Market Trends', 'Industry News & Operations'],
     description: 'Investment, operations, and trends in senior housing',
   },
   {
@@ -62,7 +52,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=site%3Acms.gov+%22assisted+living%22+OR+%22long-term+care%22+OR+Medicaid+OR+Medicare',
     websiteUrl: 'https://www.cms.gov/newsroom',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.CRITICAL,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Compliance & Regulatory', 'Law / Policy / ALTCS Updates'],
     description: 'Centers for Medicare & Medicaid Services — Medicaid updates, federal policy (via Google News)',
   },
   {
@@ -70,7 +62,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=%22AHCA%22+%22NCAL%22+%22assisted+living%22+OR+%22nursing+facility%22+OR+%22long-term+care%22',
     websiteUrl: 'https://www.ahcancal.org/News-and-Communications',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.HIGH,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Industry News & Operations', 'Compliance & Regulatory'],
     description: 'Assisted living trends, regulatory insights, operator-focused news (via Google News)',
   },
   {
@@ -78,7 +72,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=%22LeadingAge%22+%22senior+living%22+OR+%22aging+services%22+OR+%22long-term+care%22',
     websiteUrl: 'https://leadingage.org/news/',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.HIGH,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Law / Policy / ALTCS Updates', 'Industry News & Operations'],
     description: 'Policy, nonprofit, and aging services news (via Google News)',
   },
   {
@@ -86,7 +82,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=assisted+living+Arizona',
     websiteUrl: 'https://news.google.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.HIGH,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Industry News & Operations'],
     description: 'Dynamic Google News feed for Arizona assisted living',
   },
   {
@@ -94,7 +92,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=senior+living+regulations',
     websiteUrl: 'https://news.google.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.HIGH,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Compliance & Regulatory'],
     description: 'Dynamic Google News feed for senior living regulations',
   },
   {
@@ -102,16 +102,20 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=caregiver+shortage+Arizona',
     websiteUrl: 'https://news.google.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.HIGH,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Staffing & Caregiver News'],
     description: 'Dynamic Google News feed for Arizona caregiver shortages',
   },
-  // Tier 2 — High Value
+  // ── High-value regional / policy sources ───────────────────────────────────
   {
     name: 'AHCCCS / ALTCS News',
     rssUrl: 'https://news.google.com/rss/search?q=AHCCCS+ALTCS+Arizona+Medicaid',
     websiteUrl: 'https://www.azahcccs.gov',
     type: SourceType.RSS,
-    tier: SourceTier.TIER2,
+    priority: SourcePriority.CRITICAL,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['ALTCS / Medicaid', 'Law / Policy / ALTCS Updates'],
     description: 'Arizona ALTCS and Medicaid updates via Google News (azahcccs.gov does not publish RSS)',
   },
   {
@@ -119,7 +123,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=Arizona+legislature+%22assisted+living%22+OR+%22senior+care%22+OR+%22ALTCS%22+bill',
     websiteUrl: 'https://www.azleg.gov',
     type: SourceType.RSS,
-    tier: SourceTier.TIER2,
+    priority: SourcePriority.CRITICAL,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Law / Policy / ALTCS Updates', 'Arizona Regulations'],
     description: 'Arizona legislative activity affecting assisted living and senior care',
   },
   {
@@ -127,7 +133,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://www.kff.org/feed/',
     websiteUrl: 'https://www.kff.org',
     type: SourceType.RSS,
-    tier: SourceTier.TIER2,
+    priority: SourcePriority.MEDIUM,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Law / Policy / ALTCS Updates'],
     description: 'Policy and data insights',
   },
   {
@@ -135,7 +143,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://tools.cdc.gov/api/v2/resources/media/403372.rss',
     websiteUrl: 'https://www.cdc.gov',
     type: SourceType.RSS,
-    tier: SourceTier.TIER2,
+    priority: SourcePriority.MEDIUM,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Emergency & Safety Alerts'],
     description: 'CDC health alerts relevant to care facilities',
   },
   {
@@ -143,16 +153,20 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=site%3Amodernhealthcare.com+%22assisted+living%22+OR+%22senior+care%22+OR+%22long-term+care%22',
     websiteUrl: 'https://www.modernhealthcare.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER2,
+    priority: SourcePriority.MEDIUM,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Industry News & Operations'],
     description: 'Healthcare industry news (via Google News)',
   },
-  // Tier 3 — Local News
+  // ── Local news ──────────────────────────────────────────────────────────
   {
     name: 'AZ Central',
     rssUrl: 'https://news.google.com/rss/search?q=site%3Aazcentral.com+%22assisted+living%22+OR+%22senior+care%22+OR+%22nursing+home%22+Arizona',
     websiteUrl: 'https://www.azcentral.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER3,
+    priority: SourcePriority.LOW,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Industry News & Operations'],
     description: 'Local Arizona news — senior stories, facility issues, community updates (via Google News)',
   },
   {
@@ -160,7 +174,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=site%3Abizjournals.com+phoenix+%22assisted+living%22+OR+%22senior+living%22+OR+%22senior+care%22',
     websiteUrl: 'https://www.bizjournals.com/phoenix',
     type: SourceType.RSS,
-    tier: SourceTier.TIER3,
+    priority: SourcePriority.LOW,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Market Trends'],
     description: 'Phoenix deals, developments, facility openings (via Google News)',
   },
   {
@@ -168,7 +184,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://www.12news.com/feeds/syndication/rss/news',
     websiteUrl: 'https://www.12news.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER3,
+    priority: SourcePriority.LOW,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Industry News & Operations'],
     description: 'Local Arizona news',
   },
   {
@@ -176,7 +194,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=site%3Aabc15.com+%22assisted+living%22+OR+%22senior+care%22+OR+%22nursing+home%22+Arizona',
     websiteUrl: 'https://www.abc15.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER3,
+    priority: SourcePriority.LOW,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Industry News & Operations'],
     description: 'Local Arizona news (via Google News)',
   },
   // ── Emergency & Safety (Phase 2 — Newsletter category) ───────────────────
@@ -185,7 +205,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=%22National+Weather+Service%22+Arizona+%22heat+warning%22+OR+%22heat+advisory%22+OR+monsoon+OR+wildfire+OR+%22air+quality+alert%22',
     websiteUrl: 'https://www.weather.gov/psr',
     type: SourceType.RSS,
-    tier: SourceTier.TIER1,
+    priority: SourcePriority.HIGH,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Emergency & Safety Alerts'],
     description: 'National Weather Service Phoenix — heat warnings, monsoon alerts, extreme weather for Arizona (via Google News)',
   },
   {
@@ -193,7 +215,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://tools.cdc.gov/api/v2/resources/media/403372.rss',
     websiteUrl: 'https://www.cdc.gov/phpr',
     type: SourceType.RSS,
-    tier: SourceTier.TIER2,
+    priority: SourcePriority.MEDIUM,
+    trustLevel: TrustLevel.HIGH,
+    categories: ['Emergency & Safety Alerts'],
     description: 'CDC emergency preparedness — flu outbreaks, COVID updates, infection control for care facilities',
   },
   {
@@ -201,7 +225,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=Arizona+heat+warning+OR+%22heat+advisory%22+senior+care',
     websiteUrl: 'https://news.google.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER2,
+    priority: SourcePriority.MEDIUM,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Emergency & Safety Alerts'],
     description: 'Google News feed for Arizona heat and safety alerts affecting senior care facilities',
   },
   {
@@ -209,7 +235,9 @@ const DEFAULT_SOURCES = [
     rssUrl: 'https://news.google.com/rss/search?q=Arizona+wildfire+OR+%22air+quality%22+health+alert',
     websiteUrl: 'https://news.google.com',
     type: SourceType.RSS,
-    tier: SourceTier.TIER2,
+    priority: SourcePriority.MEDIUM,
+    trustLevel: TrustLevel.MEDIUM,
+    categories: ['Emergency & Safety Alerts'],
     description: 'Google News feed for Arizona wildfire and air quality alerts',
   },
 ];
@@ -219,6 +247,7 @@ export class IntelligenceHubService implements OnModuleInit {
   constructor(
     @InjectModel(Source.name) private sourceModel: Model<SourceDocument>,
     @InjectModel(ContentItem.name) private contentItemModel: Model<ContentItemDocument>,
+    @InjectModel(ScanLog.name) private scanLogModel: Model<ScanLogDocument>,
     private feedIngestionService: FeedIngestionService,
   ) {}
 
@@ -281,8 +310,20 @@ export class IntelligenceHubService implements OnModuleInit {
 
   // ─── SOURCES ──────────────────────────────────────────────────────────────
 
-  getSources() {
-    return this.sourceModel.find().sort({ tier: 1, name: 1 }).exec();
+  private static readonly PRIORITY_RANK: Record<SourcePriority, number> = {
+    [SourcePriority.CRITICAL]: 0,
+    [SourcePriority.HIGH]: 1,
+    [SourcePriority.MEDIUM]: 2,
+    [SourcePriority.LOW]: 3,
+  };
+
+  async getSources() {
+    const sources = await this.sourceModel.find().exec();
+    return sources.sort((a, b) => {
+      const rankDiff =
+        IntelligenceHubService.PRIORITY_RANK[a.priority] - IntelligenceHubService.PRIORITY_RANK[b.priority];
+      return rankDiff !== 0 ? rankDiff : a.name.localeCompare(b.name);
+    });
   }
 
   createSource(dto: CreateSourceDto): Promise<SourceDocument> {
@@ -312,6 +353,10 @@ export class IntelligenceHubService implements OnModuleInit {
     if (query.sourceName) filter.sourceName = { $regex: query.sourceName, $options: 'i' };
     if (query.status) filter.status = query.status;
     if (query.priority) filter.priority = query.priority;
+    if (query.changeType) filter.changeType = query.changeType;
+    if (query.urgency) filter.urgency = query.urgency;
+    if (query.riskLevel) filter.riskLevel = query.riskLevel;
+    if (query.opportunityLevel) filter.opportunityLevel = query.opportunityLevel;
     if (query.approved !== undefined) filter.approved = query.approved;
     if (query.reviewed !== undefined) filter.reviewed = query.reviewed;
     if (query.readyToPost !== undefined) filter.readyToPost = query.readyToPost;
@@ -410,8 +455,34 @@ export class IntelligenceHubService implements OnModuleInit {
 
   // ─── MANUAL INGEST ────────────────────────────────────────────────────────
 
-  triggerIngest(): Promise<{ imported: number; skipped: number; errors: number }> {
+  triggerIngest() {
     return this.feedIngestionService.ingestAll();
+  }
+
+  // ─── SCAN LOGS ────────────────────────────────────────────────────────────
+
+  async getScanLogs(query: QueryScanLogDto) {
+    const filter: Record<string, any> = {};
+
+    if (query.sourceId) filter.sourceId = query.sourceId;
+    if (query.outcome) filter.outcome = query.outcome;
+
+    if (query.dateFrom || query.dateTo) {
+      filter.scannedAt = {};
+      if (query.dateFrom) filter.scannedAt.$gte = new Date(query.dateFrom);
+      if (query.dateTo) filter.scannedAt.$lte = new Date(query.dateTo);
+    }
+
+    const page = query.page ?? 1;
+    const limit = Math.min(query.limit ?? 50, 200);
+    const skip = (page - 1) * limit;
+
+    const [logs, total] = await Promise.all([
+      this.scanLogModel.find(filter).sort({ scannedAt: -1 }).skip(skip).limit(limit).exec(),
+      this.scanLogModel.countDocuments(filter).exec(),
+    ]);
+
+    return { logs, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   // ─── STATS ────────────────────────────────────────────────────────────────

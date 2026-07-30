@@ -9,10 +9,23 @@ export enum SourceType {
   MANUAL = 'manual',
 }
 
-export enum SourceTier {
-  TIER1 = 'tier1',
-  TIER2 = 'tier2',
-  TIER3 = 'tier3',
+export enum SourcePriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  CRITICAL = 'critical',
+}
+
+export enum TrustLevel {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+}
+
+export enum HealthStatus {
+  HEALTHY = 'healthy',
+  WARNING = 'warning',
+  FAILING = 'failing',
 }
 
 @Schema({ timestamps: true })
@@ -29,8 +42,20 @@ export class Source {
   @Prop({ required: true, enum: SourceType, default: SourceType.RSS })
   type: SourceType;
 
-  @Prop({ required: true, enum: SourceTier, default: SourceTier.TIER1 })
-  tier: SourceTier;
+  @Prop({ trim: true, default: 'Assisted Living' })
+  industry: string;
+
+  @Prop({ type: [String], default: [] })
+  categories: string[];
+
+  @Prop({ type: Number, default: 2, min: 0.5 })
+  scanFrequencyHours: number;
+
+  @Prop({ required: true, enum: SourcePriority, default: SourcePriority.MEDIUM })
+  priority: SourcePriority;
+
+  @Prop({ required: true, enum: TrustLevel, default: TrustLevel.MEDIUM })
+  trustLevel: TrustLevel;
 
   @Prop({ default: true })
   isActive: boolean;
@@ -38,8 +63,19 @@ export class Source {
   @Prop({ trim: true })
   description: string;
 
+  // Updated on every scan attempt, success or failure
   @Prop({ type: Date, default: null })
-  lastFetchedAt: Date | null;
+  lastScanAt: Date | null;
+
+  // Updated only when a scan successfully fetches the feed
+  @Prop({ type: Date, default: null })
+  lastSuccessfulScanAt: Date | null;
+
+  @Prop({ required: true, enum: HealthStatus, default: HealthStatus.HEALTHY })
+  healthStatus: HealthStatus;
+
+  @Prop({ type: Number, default: 0 })
+  consecutiveFailures: number;
 }
 
 export const SourceSchema = SchemaFactory.createForClass(Source);

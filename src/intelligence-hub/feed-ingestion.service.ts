@@ -3,17 +3,27 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Cron } from '@nestjs/schedule';
 import axios from 'axios';
+import * as crypto from 'crypto';
 import * as https from 'https';
 import * as http from 'http';
 import Parser from 'rss-parser';
-import { Source, SourceDocument, SourceType } from './schemas/source.schema';
+import { HealthStatus, Source, SourceDocument, SourceType } from './schemas/source.schema';
 import {
   ContentItem,
   ContentItemDocument,
   ContentStatus,
   PriorityLevel,
 } from './schemas/content-item.schema';
-import { AiProcessingService, AiProcessingError } from './ai-processing.service';
+import { ScanLog, ScanLogDocument, ScanOutcome } from './schemas/scan-log.schema';
+import {
+  AiProcessingService,
+  AiProcessingError,
+  VALID_CHANGE_TYPES,
+  VALID_URGENCY_LEVELS,
+  VALID_RISK_LEVELS,
+  VALID_OPPORTUNITY_LEVELS,
+} from './ai-processing.service';
+import { CATEGORIES } from './categories';
 
 const RELEVANT_KEYWORDS = [
   'assisted living',
@@ -104,49 +114,72 @@ export class FeedIngestionService {
   constructor(
     @InjectModel(Source.name) private sourceModel: Model<SourceDocument>,
     @InjectModel(ContentItem.name) private contentItemModel: Model<ContentItemDocument>,
+    @InjectModel(ScanLog.name) private scanLogModel: Model<ScanLogDocument>,
     private aiService: AiProcessingService,
   ) {}
 
-  // Every 2 hours
-  @Cron('0 */2 * * *')
-  async scheduledIngestion() {
-    this.logger.log('Starting scheduled feed ingestion...');
-    await this.ingestAll();
+  private computeContentHash(title: string, excerpt: string): string {
+    return crypto.createHash('sha256').update(`${title}|${excerpt}`).digest('hex');
   }
 
-  async ingestAll(): Promise<{
+  // Runs every 30 minutes; each source is only actually scanned once its own
+  // scanFrequencyHours has elapsed (see ingestAll's respectFrequency filter).
+  @Cron('*/30 * * * *')
+  async scheduledIngestion() {
+    this.logger.log('Starting scheduled feed ingestion...');
+    await this.ingestAll(true);
+  }
+
+  async ingestAll(respectFrequency = false): Promise<{
     imported: number;
+    modified: number;
     alreadyExists: number;
     notRelevant: number;
     skipped: number;
     errors: number;
     failedSources: string[];
   }> {
-    const sources = await this.sourceModel.find({ isActive: true }).exec();
-    const rssSources = sources.filter((s) => s.type === SourceType.RSS);
-    const skippedNonRss = sources.length - rssSources.length;
-    if (skippedNonRss > 0) {
-      this.logger.log(`Skipping ${skippedNonRss} non-RSS source(s)`);
+    const sources = await this.sourceModel.find({ isActive: true, type: SourceType.RSS }).exec();
+
+    const now = Date.now();
+    const dueSources = respectFrequency
+      ? sources.filter((s) => {
+          if (!s.lastScanAt) return true;
+          const frequencyMs = (s.scanFrequencyHours ?? 2) * 60 * 60 * 1000;
+          return now - new Date(s.lastScanAt).getTime() >= frequencyMs;
+        })
+      : sources;
+
+    if (respectFrequency) {
+      this.logger.log(`${dueSources.length}/${sources.length} active source(s) due for scanning`);
     }
+
+    // A scheduled (cron) run respects each source's frequency; anything else
+    // (the admin's "Run Ingest Now" button) is a manual trigger.
+    const triggeredManually = !respectFrequency;
 
     // Process sources in parallel batches of 5.
     // All-at-once parallelism causes rss2json rate-limit (10 req/min free tier)
     // when many sources fall through to that third-layer proxy simultaneously.
     const BATCH_SIZE = 5;
     let imported = 0;
+    let modified = 0;
     let alreadyExists = 0;
     let notRelevant = 0;
     let errors = 0;
     const failedSources: string[] = [];
 
-    for (let i = 0; i < rssSources.length; i += BATCH_SIZE) {
-      const batch = rssSources.slice(i, i + BATCH_SIZE);
-      const results = await Promise.allSettled(batch.map((source) => this.ingestSource(source)));
+    for (let i = 0; i < dueSources.length; i += BATCH_SIZE) {
+      const batch = dueSources.slice(i, i + BATCH_SIZE);
+      const results = await Promise.allSettled(
+        batch.map((source) => this.ingestSource(source, triggeredManually)),
+      );
 
       results.forEach((result, j) => {
         const source = batch[j];
         if (result.status === 'fulfilled') {
           imported += result.value.imported;
+          modified += result.value.modified;
           alreadyExists += result.value.alreadyExists;
           notRelevant += result.value.notRelevant;
         } else {
@@ -160,9 +193,9 @@ export class FeedIngestionService {
 
     const skipped = alreadyExists + notRelevant;
     this.logger.log(
-      `Ingestion complete. Imported: ${imported}, Already exists: ${alreadyExists}, Not relevant: ${notRelevant}, Errors: ${errors}`,
+      `Ingestion complete. Imported: ${imported}, Modified: ${modified}, Already exists: ${alreadyExists}, Not relevant: ${notRelevant}, Errors: ${errors}`,
     );
-    return { imported, alreadyExists, notRelevant, skipped, errors, failedSources };
+    return { imported, modified, alreadyExists, notRelevant, skipped, errors, failedSources };
   }
 
   private readonly PROXY_HEADERS = {
@@ -248,13 +281,43 @@ export class FeedIngestionService {
     }
   }
 
-  async ingestSource(source: SourceDocument): Promise<{ imported: number; alreadyExists: number; notRelevant: number }> {
+  async ingestSource(
+    source: SourceDocument,
+    triggeredManually = false,
+  ): Promise<{ imported: number; modified: number; alreadyExists: number; notRelevant: number }> {
     let imported = 0;
+    let modified = 0;
     let alreadyExists = 0;
     let notRelevant = 0;
 
-    const feed = await this.fetchFeed(source.rssUrl);
-    await this.sourceModel.findByIdAndUpdate(source._id, { lastFetchedAt: new Date() });
+    await this.sourceModel.findByIdAndUpdate(source._id, { lastScanAt: new Date() });
+
+    let feed: Parser.Output<Record<string, any>>;
+    try {
+      feed = await this.fetchFeed(source.rssUrl);
+    } catch (err) {
+      const consecutiveFailures = (source.consecutiveFailures ?? 0) + 1;
+      await this.sourceModel.findByIdAndUpdate(source._id, {
+        consecutiveFailures,
+        healthStatus: consecutiveFailures >= 3 ? HealthStatus.FAILING : HealthStatus.WARNING,
+      });
+      const message = err instanceof Error ? err.message : String(err);
+      await this.scanLogModel.create({
+        sourceId: source._id,
+        sourceName: source.name,
+        scannedAt: new Date(),
+        outcome: ScanOutcome.FAILED,
+        errorMessage: message.slice(0, 500),
+        triggeredManually,
+      });
+      throw err;
+    }
+
+    await this.sourceModel.findByIdAndUpdate(source._id, {
+      lastSuccessfulScanAt: new Date(),
+      consecutiveFailures: 0,
+      healthStatus: HealthStatus.HEALTHY,
+    });
 
     // Only import articles published within the last 30 days
     const CUTOFF_DATE = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -263,11 +326,69 @@ export class FeedIngestionService {
       const articleUrl = item.link ?? item.guid ?? '';
       if (!articleUrl) { notRelevant++; continue; }
 
-      const exists = await this.contentItemModel.findOne({ articleUrl }).lean().exec();
-      if (exists) { alreadyExists++; continue; }
-
       const title = this.stripHtml(item.title ?? '');
       const excerpt = this.stripHtml(item.contentSnippet ?? item.summary ?? '');
+      const contentHash = this.computeContentHash(title, excerpt);
+
+      const existing = await this.contentItemModel
+        .findOne({ articleUrl })
+        .select('_id contentHash')
+        .lean()
+        .exec();
+
+      if (existing) {
+        if (!existing.contentHash) {
+          // Item predates content-hash tracking — backfill quietly, don't
+          // treat it as "modified" just because we've never hashed it before.
+          await this.contentItemModel.findByIdAndUpdate(existing._id, { contentHash });
+          alreadyExists++;
+          continue;
+        }
+
+        if (existing.contentHash === contentHash) {
+          alreadyExists++;
+          continue;
+        }
+
+        // Same article URL, but the source has changed the title/excerpt
+        // since we last imported it — a genuine content modification.
+        const content = this.stripHtml((item as any).contentEncoded ?? item.content ?? excerpt);
+        const searchText = `${title} ${excerpt}`.toLowerCase();
+        const isArizonaSpecific = ARIZONA_KEYWORDS.some((kw) => searchText.includes(kw));
+        const category = this.autoCategory(searchText);
+        const sourceNameLower = source.name.toLowerCase();
+        const isCriticalSource = CRITICAL_SOURCE_KEYWORDS.some((kw) => sourceNameLower.includes(kw) || searchText.includes(kw));
+        const priority = isCriticalSource
+          ? PriorityLevel.CRITICAL
+          : isArizonaSpecific
+          ? PriorityLevel.HIGH
+          : PriorityLevel.NORMAL;
+
+        await this.contentItemModel.findByIdAndUpdate(existing._id, {
+          originalTitle: title,
+          originalExcerpt: excerpt,
+          originalContent: content,
+          contentHash,
+          contentUpdated: true,
+          contentUpdatedAt: new Date(),
+          status: ContentStatus.PROCESSING,
+          category,
+          isArizonaSpecific,
+          priority,
+        });
+
+        await this.processItemWithAI(
+          existing._id.toString(),
+          title,
+          content || excerpt,
+          source.name,
+          new Date().toISOString(),
+        );
+
+        modified++;
+        continue;
+      }
+
       const content = this.stripHtml((item as any).contentEncoded ?? item.content ?? excerpt);
       const publishDate = item.pubDate ? new Date(item.pubDate) : new Date();
 
@@ -305,6 +426,7 @@ export class FeedIngestionService {
           status: ContentStatus.NEW,
           isArizonaSpecific,
           priority,
+          contentHash,
         });
 
         await this.processItemWithAI(
@@ -326,7 +448,19 @@ export class FeedIngestionService {
       }
     }
 
-    return { imported, alreadyExists, notRelevant };
+    await this.scanLogModel.create({
+      sourceId: source._id,
+      sourceName: source.name,
+      scannedAt: new Date(),
+      outcome: ScanOutcome.SUCCESS,
+      imported,
+      modified,
+      alreadyExists,
+      notRelevant,
+      triggeredManually,
+    });
+
+    return { imported, modified, alreadyExists, notRelevant };
   }
 
   /**
@@ -347,8 +481,20 @@ export class FeedIngestionService {
 
     try {
       const aiOutput = await this.aiService.processArticle(title, content, source, date);
+      const changeType = VALID_CHANGE_TYPES.includes(aiOutput.change_type)
+        ? aiOutput.change_type
+        : 'other';
+      const urgency = VALID_URGENCY_LEVELS.includes(aiOutput.urgency)
+        ? aiOutput.urgency
+        : 'monitor';
+      const riskLevel = VALID_RISK_LEVELS.includes(aiOutput.risk_level)
+        ? aiOutput.risk_level
+        : 'low';
+      const opportunityLevel = VALID_OPPORTUNITY_LEVELS.includes(aiOutput.opportunity_level)
+        ? aiOutput.opportunity_level
+        : 'low';
 
-      await this.contentItemModel.findByIdAndUpdate(itemId, {
+      const update: Record<string, any> = {
         status: ContentStatus.PENDING_REVIEW,
         aiHeadline: aiOutput.headline,
         aiSummary: aiOutput.summary,
@@ -357,7 +503,20 @@ export class FeedIngestionService {
         aiFacebookPost: aiOutput.facebook_post,
         aiEmailBlurb: aiOutput.email_blurb,
         aiRelevanceScore: aiOutput.relevance_score,
-      });
+        aiWhoIsAffected: aiOutput.who_is_affected,
+        changeType,
+        urgency,
+        riskLevel,
+        opportunityLevel,
+      };
+
+      // Only trust the AI's category if it's one of the known categories —
+      // otherwise keep whatever keyword-based category was set at import time.
+      if (CATEGORIES.includes(aiOutput.category)) {
+        update.category = aiOutput.category;
+      }
+
+      await this.contentItemModel.findByIdAndUpdate(itemId, update);
     } catch (err) {
       await this.contentItemModel.findByIdAndUpdate(itemId, { status: ContentStatus.NEW });
 

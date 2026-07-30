@@ -1,7 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { ContentStatus, PriorityLevel } from '../schemas/content-item.schema';
+import {
+  ChangeType,
+  ContentStatus,
+  OpportunityLevel,
+  PriorityLevel,
+  RiskLevel,
+  UrgencyLevel,
+} from '../schemas/content-item.schema';
 
 export class QueryContentDto {
   @ApiPropertyOptional()
@@ -28,6 +35,26 @@ export class QueryContentDto {
   @IsOptional()
   @IsEnum(PriorityLevel)
   priority?: PriorityLevel;
+
+  @ApiPropertyOptional({ enum: ChangeType })
+  @IsOptional()
+  @IsEnum(ChangeType)
+  changeType?: ChangeType;
+
+  @ApiPropertyOptional({ enum: UrgencyLevel })
+  @IsOptional()
+  @IsEnum(UrgencyLevel)
+  urgency?: UrgencyLevel;
+
+  @ApiPropertyOptional({ enum: RiskLevel })
+  @IsOptional()
+  @IsEnum(RiskLevel)
+  riskLevel?: RiskLevel;
+
+  @ApiPropertyOptional({ enum: OpportunityLevel })
+  @IsOptional()
+  @IsEnum(OpportunityLevel)
+  opportunityLevel?: OpportunityLevel;
 
   @ApiPropertyOptional()
   @IsOptional()
