@@ -145,17 +145,17 @@ function ItemRow({
             </span>
           )}
           {item.changeType && item.changeType !== 'other' && (
-            <span className="text-[10px] font-semibold text-indigo-700 bg-[#EEF2FF] px-1.5 py-0.5 rounded inline-block">
+            <span title={`Change Type: ${CHANGE_TYPE_LABEL[item.changeType]}`} className="text-[10px] font-semibold text-indigo-700 bg-[#EEF2FF] px-1.5 py-0.5 rounded inline-block">
               {CHANGE_TYPE_LABEL[item.changeType]}
             </span>
           )}
           {item.contentUpdated && (
-            <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded inline-block">
+            <span title="This article's content changed after it was first imported" className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded inline-block">
               Updated
             </span>
           )}
           {item.urgency && item.urgency !== 'no_action' && (
-            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded inline-block ${URGENCY_BADGE[item.urgency]}`}>
+            <span title={`Urgency: ${URGENCY_LABEL[item.urgency]}`} className={`text-[10px] font-semibold px-1.5 py-0.5 rounded inline-block ${URGENCY_BADGE[item.urgency]}`}>
               {URGENCY_LABEL[item.urgency]}
             </span>
           )}

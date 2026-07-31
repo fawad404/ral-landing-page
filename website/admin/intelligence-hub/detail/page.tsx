@@ -323,29 +323,29 @@ export default function AdminIntelligenceHubDetailPage({ id }: Props) {
         <div className="flex flex-col gap-2">
           <div className="flex gap-2 flex-wrap">
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_BADGE[item.status] ?? 'bg-gray-100 text-gray-500'}`}>
-              {STATUS_LABEL[item.status] ?? item.status}
+              <span className="opacity-60">Status:</span> {STATUS_LABEL[item.status] ?? item.status}
             </span>
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${PRIORITY_BADGE[item.priority]}`}>
-              {item.priority} priority
+              <span className="opacity-60 lowercase">Priority:</span> {item.priority}
             </span>
             {item.changeType && (
               <span className="text-xs font-semibold bg-[#EEF2FF] text-indigo-700 px-2 py-0.5 rounded-full">
-                {CHANGE_TYPE_LABEL[item.changeType]}
+                <span className="opacity-60">Change Type:</span> {CHANGE_TYPE_LABEL[item.changeType]}
               </span>
             )}
             {item.urgency && (
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${URGENCY_BADGE[item.urgency]}`}>
-                {URGENCY_LABEL[item.urgency]}
+                <span className="opacity-60">Urgency:</span> {URGENCY_LABEL[item.urgency]}
               </span>
             )}
             {item.riskLevel && (
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${RISK_BADGE[item.riskLevel]}`}>
-                {RISK_LABEL[item.riskLevel]}
+                <span className="opacity-60">Risk:</span> {RISK_LABEL[item.riskLevel]}
               </span>
             )}
             {item.opportunityLevel && item.opportunityLevel !== 'low' && (
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${OPPORTUNITY_BADGE[item.opportunityLevel]}`}>
-                {OPPORTUNITY_LABEL[item.opportunityLevel]}
+                <span className="opacity-60">Opportunity:</span> {OPPORTUNITY_LABEL[item.opportunityLevel]}
               </span>
             )}
             {item.contentUpdated && (
