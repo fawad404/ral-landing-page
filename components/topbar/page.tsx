@@ -14,7 +14,7 @@ function getPortalTitle(pathname: string): string {
   return 'Facility Portal';
 }
 
-const NotificationDropdown = ({ onClose }: { onClose: () => void }) => {
+export const NotificationDropdown = ({ onClose }: { onClose: () => void }) => {
   const { data: notifications = [] } = useNotifications();
   const markAll = useMarkAllRead();
   const ref = useRef<HTMLDivElement>(null);
