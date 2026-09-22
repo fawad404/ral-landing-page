@@ -30,6 +30,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user || !user.isActive) {
       throw new UnauthorizedException('User not found or inactive');
     }
+    // Registration returns a token before approval; don't let it be used
+    // until an admin approves the account (login already enforces this).
+    if (!user.isApproved) {
+      throw new UnauthorizedException('Your account is pending admin approval');
+    }
     return {
       _id: user._id,
       email: user.email,
