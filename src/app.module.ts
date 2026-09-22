@@ -26,6 +26,7 @@ import { LeadsModule } from './leads/leads.module';
 import { DemoInquiriesModule } from './demo-inquiries/demo-inquiries.module';
 import { CaregiversModule } from './caregivers/caregivers.module';
 import { AvailabilityBroadcastModule } from './availability-broadcast/availability-broadcast.module';
+import { CronModule } from './cron/cron.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { AvailabilityBroadcastModule } from './availability-broadcast/availabili
     DemoInquiriesModule,
     CaregiversModule,
     AvailabilityBroadcastModule,
+    CronModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -18,5 +18,6 @@ import { ScanLog, ScanLogSchema } from './schemas/scan-log.schema';
   ],
   controllers: [IntelligenceHubController],
   providers: [IntelligenceHubService, FeedIngestionService, AiProcessingService],
+  exports: [FeedIngestionService],
 })
 export class IntelligenceHubModule {}
