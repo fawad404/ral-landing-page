@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type ScanLogDocument = ScanLog & Document;
 
@@ -13,7 +13,7 @@ export enum ScanOutcome {
 // new intelligence (Module 2 — Source Monitoring).
 @Schema({ timestamps: true })
 export class ScanLog {
-  @Prop({ type: Types.ObjectId, ref: 'Source', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Source', required: true })
   sourceId: Types.ObjectId;
 
   @Prop({ required: true, trim: true })

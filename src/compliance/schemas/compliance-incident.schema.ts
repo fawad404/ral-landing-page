@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type ComplianceIncidentDocument = ComplianceIncident & Document;
 
@@ -31,10 +31,10 @@ export enum IncidentStatus {
 
 @Schema({ timestamps: true })
 export class ComplianceIncident {
-  @Prop({ type: Types.ObjectId, ref: 'Facility', required: true, index: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Facility', required: true, index: true })
   facilityId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
 
   @Prop({ required: true, trim: true })

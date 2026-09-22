@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type AvailabilityResponseDocument = AvailabilityResponse & Document;
 
@@ -11,7 +11,7 @@ export enum ResponseType {
 
 @Schema({ timestamps: true })
 export class AvailabilityResponse {
-  @Prop({ type: Types.ObjectId, ref: 'AvailabilityRequest', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'AvailabilityRequest', required: true })
   requestId: Types.ObjectId;
 
   @Prop({ enum: ResponseType, required: true })

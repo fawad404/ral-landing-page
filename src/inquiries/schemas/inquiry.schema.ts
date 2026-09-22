@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type InquiryDocument = Inquiry & Document;
 
@@ -57,7 +57,7 @@ class Requirements {
 
 @Schema({ _id: false })
 class MatchHistoryEntry {
-  @Prop({ type: Types.ObjectId, ref: 'Facility' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Facility' })
   facilityId: Types.ObjectId;
 
   @Prop()
@@ -84,7 +84,7 @@ export class Inquiry {
   @Prop({ enum: InquiryStatus, default: InquiryStatus.NEW })
   status: InquiryStatus;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Facility' }], default: [] })
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Facility' }], default: [] })
   assignedFacilityIds: Types.ObjectId[];
 
   @Prop({ default: '' })
@@ -93,7 +93,7 @@ export class Inquiry {
   @Prop()
   notes: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   assignedTo: Types.ObjectId | null;
 
   @Prop({ type: [MatchHistoryEntry], default: [] })

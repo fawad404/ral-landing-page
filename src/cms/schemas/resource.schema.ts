@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type ResourceDocument = Resource & Document;
 
@@ -26,7 +26,7 @@ export class Resource {
   @Prop({ default: false })
   isPublished: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   authorId: Types.ObjectId | null;
 
   @Prop({ type: [String], default: [] })
