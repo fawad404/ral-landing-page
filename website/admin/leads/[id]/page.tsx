@@ -149,7 +149,8 @@ export default function LeadDetailPage({ id }: { id: string }) {
   const handleSave = () => updateLead.mutate({ status, adminNotes: notes });
 
   const handleCreateAccount = (password: string) => {
-    const loginUrl = `${window.location.origin}/login`;
+    // Login page lives at the site root (app/page.tsx); /login 404s.
+    const loginUrl = `${window.location.origin}/`;
     createAccount.mutate({ password, loginUrl }, {
       onSuccess: () => { setAccountCreated(true); setShowModal(false); },
     });
