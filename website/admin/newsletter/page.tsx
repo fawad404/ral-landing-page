@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { APP_ROUTES } from '@/api/endpoints';
 import { useIHItems, useUpdateItem } from '@/hooks/useIntelligenceHub';
@@ -261,6 +261,9 @@ export default function AdminNewsletterPage() {
   const [activeTab, setActiveTab] = useState<'scheduled' | 'published'>('scheduled');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('');
+  // Platform links follow whatever domain the dashboard is served from.
+  const [origin, setOrigin] = useState('https://ral-connect-dashboard.vercel.app');
+  useEffect(() => setOrigin(window.location.origin), []);
 
   const scheduledQ = useIHItems({ status: 'scheduled', limit: 100 });
   const publishedQ = useIHItems({ status: 'published', limit: 100 });
@@ -305,16 +308,16 @@ export default function AdminNewsletterPage() {
           <div className="flex items-center gap-2 bg-white border border-[#E2E8F0] rounded-lg px-3 py-2">
             <span className="text-xs font-semibold text-[#0F172A]">Vendor Portal:</span>
             <code className="text-xs text-[#09488B] bg-[#E8F1FB] px-2 py-0.5 rounded">
-              https://ralconnect.vercel.app/vendor
+              {origin}/vendor
             </code>
-            <CopyButton text="https://ralconnect.vercel.app/vendor" />
+            <CopyButton text={`${origin}/vendor`} />
           </div>
           <div className="flex items-center gap-2 bg-white border border-[#E2E8F0] rounded-lg px-3 py-2">
             <span className="text-xs font-semibold text-[#0F172A]">Deal Room:</span>
             <code className="text-xs text-[#09488B] bg-[#E8F1FB] px-2 py-0.5 rounded">
-              https://ralconnect.vercel.app/dashboard/deal-room
+              {origin}/dashboard/deal-room
             </code>
-            <CopyButton text="https://ralconnect.vercel.app/dashboard/deal-room" />
+            <CopyButton text={`${origin}/dashboard/deal-room`} />
           </div>
         </div>
       </div>
