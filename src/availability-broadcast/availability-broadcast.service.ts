@@ -31,7 +31,7 @@ export class AvailabilityBroadcastService {
 
     const requestId = (request._id as any).toString();
 
-    this.broadcastToFacilities(requestId, request).catch((err) => {
+    await this.broadcastToFacilities(requestId, request).catch((err) => {
       this.logger.error('Broadcast failed for request ' + requestId, err);
     });
 
@@ -77,7 +77,7 @@ export class AvailabilityBroadcastService {
       notes: dto.notes?.trim() || '',
     });
 
-    this.mailService.forwardInterestedResponse({
+    await this.mailService.forwardInterestedResponse({
       plannerEmail: request.email,
       plannerName: request.contactName,
       requestArea: request.preferredArea,

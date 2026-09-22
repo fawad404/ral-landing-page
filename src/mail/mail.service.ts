@@ -8,13 +8,26 @@ export class MailService {
   private transporter: nodemailer.Transporter;
 
   constructor(private config: ConfigService) {
+    // Generic SMTP config (Resend, Brevo, Microsoft 365, Gmail, etc.).
+    const host = this.config.get<string>('MAIL_HOST') || 'smtp.zoho.com';
+    const port = parseInt(this.config.get<string>('MAIL_PORT') || '465', 10);
+    const secure = (this.config.get<string>('MAIL_SECURE') ?? 'true') === 'true';
+
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host,
+      port,
+      secure,
       auth: {
         user: this.config.get<string>('MAIL_USER'),
         pass: this.config.get<string>('MAIL_PASSWORD'),
       },
     });
+  }
+
+  // Sender + admin inbox. MAIL_FROM is needed when the SMTP username isn't an
+  // email address (e.g. Resend uses the literal username "resend").
+  private get fromAddress(): string {
+    return this.config.get<string>('MAIL_FROM') || this.config.get<string>('MAIL_USER') || '';
   }
 
   async sendLeadNotification(opts: {
@@ -23,7 +36,7 @@ export class MailService {
     email: string;
     phone: string;
   }): Promise<void> {
-    const adminEmail = this.config.get<string>('MAIL_USER');
+    const adminEmail = this.fromAddress;
     const label = opts.type === 'facility' ? 'Facility / RAL Home' : 'Founding Partner';
 
     try {
@@ -58,7 +71,7 @@ export class MailService {
     moveTimeline: string;
     landingUrl: string;
   }): Promise<void> {
-    const adminEmail = this.config.get<string>('MAIL_USER');
+    const adminEmail = this.fromAddress;
     const base = opts.landingUrl.replace(/\/$/, '');
     const interestedUrl = `${base}/respond?requestId=${opts.requestId}&action=interested`;
     const moreInfoUrl   = `${base}/respond?requestId=${opts.requestId}&action=more_info`;
@@ -149,7 +162,7 @@ export class MailService {
     availableBedCount?: number;
     notes?: string;
   }): Promise<void> {
-    const adminEmail = this.config.get<string>('MAIL_USER');
+    const adminEmail = this.fromAddress;
 
     try {
       await this.transporter.sendMail({
@@ -225,7 +238,7 @@ export class MailService {
   }): Promise<void> {
     try {
       await this.transporter.sendMail({
-        from: `"RAL Connect" <${this.config.get<string>('MAIL_USER')}>`,
+        from: `"RAL Connect" <${this.fromAddress}>`,
         to: opts.to,
         subject: 'Welcome to RAL Connect — Your Login Details',
         html: `

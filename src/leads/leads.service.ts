@@ -31,15 +31,16 @@ export class LeadsService {
 
     const label = dto.type === LeadType.FACILITY ? 'Facility' : 'Founding Partner';
 
-    // Fire-and-forget — don't block the HTTP response on notifications or email
-    this.notificationsService.createForAllAdmins(
+    // Awaited (errors swallowed) so serverless hosts don't freeze the function
+    // before the notification/email finishes.
+    await this.notificationsService.createForAllAdmins(
       NotificationType.GENERAL,
       `New ${label} Lead`,
       `${dto.name} (${dto.email}) submitted a ${label.toLowerCase()} inquiry from the landing page.`,
       { leadId: (lead._id as any).toString(), leadType: dto.type, name: dto.name, email: dto.email },
     ).catch(() => {});
 
-    this.mailService.sendLeadNotification({
+    await this.mailService.sendLeadNotification({
       type: dto.type,
       name: dto.name,
       email: dto.email,
