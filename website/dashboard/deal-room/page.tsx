@@ -266,7 +266,10 @@ function ListingCard({ listing, isOwn, onDelete }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const DealRoomComponent = () => {
-  const { data: myRequest, isLoading: requestLoading, isError: requestError, refetch: refetchRequest, isFetching: requestFetching } = useMyDealRoomRequest();
+  // isPending (not isLoading): React Query pauses retries while the browser tab
+  // is in the background, which leaves the query with no data and no error.
+  // Treating that as "not approved" showed approved facilities the lock screen.
+  const { data: myRequest, isPending: requestPending, isError: requestError, refetch: refetchRequest, isFetching: requestFetching } = useMyDealRoomRequest();
   const requestMutation = useRequestDealRoomAccess();
   const { data: listings = [], isLoading: listingsLoading, isError: listingsError, refetch } = useDealRoomListings();
   const { data: myListings = [] } = useMyDealRoomListings();
@@ -279,6 +282,32 @@ const DealRoomComponent = () => {
 
   const myListingIds = new Set(myListings.map((l) => l._id));
   const filtered = filter === "all" ? listings : listings.filter((l) => l.type === filter);
+
+  // Only show the verification gate once the server has actually answered.
+  if (requestPending || requestError) {
+    return (
+      <div className="w-full h-full flex flex-col gap-10 p-10">
+        <Header title="Deal Room" description="Private, owner-to-owner exchange for equipment, real estate, and resources." />
+        <div className="w-full bg-white rounded-2xl border border-solid border-[#E2E8F0] px-10 py-16 flex flex-col items-center gap-4 text-center">
+          {requestError ? (
+            <>
+              <p className="text-lg font-bold text-[#B45309]">Couldn&apos;t check your Deal Room access</p>
+              <p className="text-sm text-[#64748B] max-w-md">The server took too long to respond. Your access has not changed, please try again.</p>
+              <button onClick={() => refetchRequest()} disabled={requestFetching}
+                className="px-8 py-3 bg-[#09488B] rounded-xl text-sm font-bold text-white hover:bg-[#083d77] disabled:opacity-60">
+                {requestFetching ? "Checking..." : "Try again"}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-8 h-8 border-4 border-[#09488B] border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-[#64748B]">Checking your Deal Room access…</p>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   if (!isApproved) {
     // Show gate
@@ -296,19 +325,7 @@ const DealRoomComponent = () => {
             </p>
           </div>
           <div className="flex flex-col items-center gap-4">
-            {requestLoading ? (
-              <div className="w-[320px] h-14 bg-[#F1F5F9] rounded-xl animate-pulse" />
-            ) : requestError ? (
-              // Don't offer "Request Access" when we simply couldn't load the status:
-              // an approved facility would otherwise look locked out.
-              <div className="w-[320px] px-6 py-4 rounded-xl flex flex-col items-center gap-3 text-center bg-[#F59E0B1A]">
-                <span className="text-sm font-bold text-[#B45309]">Couldn&apos;t check your Deal Room access</span>
-                <button onClick={() => refetchRequest()} disabled={requestFetching}
-                  className="px-6 py-2 bg-[#09488B] rounded-lg text-sm font-bold text-white hover:bg-[#083d77] disabled:opacity-60">
-                  {requestFetching ? "Checking..." : "Try again"}
-                </button>
-              </div>
-            ) : statusInfo ? (
+            {statusInfo ? (
               <div className="w-[320px] px-6 py-4 rounded-xl flex flex-col items-center gap-1 text-center" style={{ background: statusInfo.bg }}>
                 <span className="text-sm font-bold" style={{ color: statusInfo.text }}>{statusInfo.label}</span>
                 {statusInfo.desc && <span className="text-xs text-[#64748B]">{statusInfo.desc}</span>}
