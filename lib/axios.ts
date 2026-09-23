@@ -5,7 +5,7 @@ import { TOKEN_COOKIE_KEY } from '@/api/endpoints';
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
-  timeout: 15000,
+  timeout: 30000, // API cold starts on Vercel can take ~15s
   headers: { 'Content-Type': 'application/json' },
 });
 

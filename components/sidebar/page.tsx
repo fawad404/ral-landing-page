@@ -21,6 +21,12 @@ const Sidebar = () => {
       path: "/dashboard",
     },
     {
+      title: "Update Availability",
+      icon: <AvailabilityIcon />,
+      iconActive: <AvailabilityIcon fill="#094689" />,
+      path: "/dashboard/availability",
+    },
+    {
       title: "Facility Profile",
       icon: <FacilityProfileIcon />,
       iconActive: <FacilityProfileIcon fill="#094689" />,
@@ -39,12 +45,6 @@ const Sidebar = () => {
       path: "/dashboard/deal-room",
     },
     // ── Placement-phase features — re-enable when placement engine launches ──
-    // {
-    //   title: "Availability",
-    //   icon: <AvailabilityIcon />,
-    //   iconActive: <AvailabilityIcon fill="#094689" />,
-    //   path: "/dashboard/availability",
-    // },
     // {
     //   title: "Social Boost",
     //   icon: <SocialBoostIcon />,
@@ -112,12 +112,12 @@ const Sidebar = () => {
         <p className="font-normal text-sm text-[#475569]">
           Need assistance with your facility profile?
         </p>
-        <Link
-          href={"/"}
+        <a
+          href="mailto:info@ralconnect.com?subject=RAL%20Connect%20support"
           className="w-full h-auto bg-white border border-solid border-[#E2E8F0] rounded-lg py-2 flex justify-center items-center text-xs font-bold text-[#09488B]"
         >
           Contact Support
-        </Link>
+        </a>
       </div>
     </div>
   );

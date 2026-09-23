@@ -3,15 +3,12 @@ import {
   AdditionalNoteIcon,
   BedRoomIcon,
   ChevronDownIcon,
-  SharedRoomIcon,
 } from "@/assets";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useMyFacilities, useUpdateAvailability, useUpdateFacility } from "@/hooks/useFacilities";
 
-type RoomCount = "0" | "1" | "2" | "3+";
 type GenderPreference = "None" | "Female" | "Male";
-
-const ROOM_VALUES: Record<RoomCount, number> = { "0": 0, "1": 1, "2": 2, "3+": 3 };
 
 const Form = () => {
   const { data: facilities, isLoading } = useMyFacilities();
@@ -20,34 +17,35 @@ const Form = () => {
   const updateAvailability = useUpdateAvailability(facility?._id ?? '');
   const updateFacility = useUpdateFacility(facility?._id ?? '');
 
-  const [privateRooms, setPrivateRooms] = useState<RoomCount>("0");
-  const [sharedRooms, setSharedRooms] = useState<RoomCount>("0");
+  const [beds, setBeds] = useState("0");
   const [memoryCare, setMemoryCare] = useState(false);
   const [genderPreference, setGenderPreference] = useState<GenderPreference>("None");
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState("");
 
-  const roomOptions: RoomCount[] = ["0", "1", "2", "3+"];
   const genderOptions: GenderPreference[] = ["None", "Female", "Male"];
 
   useEffect(() => {
     if (facility) {
-      const total = facility.availabilityCount ?? 0;
-      const priv = Math.ceil(total / 2);
-      const shared = total - priv;
-      const clamp = (n: number): RoomCount => n <= 0 ? "0" : n === 1 ? "1" : n === 2 ? "2" : "3+";
-      setPrivateRooms(clamp(priv));
-      setSharedRooms(clamp(shared));
+      setBeds(String(facility.availabilityCount ?? 0));
       setMemoryCare(facility.services?.includes("memory_care") ?? false);
       setGenderPreference((facility.genderPreference as GenderPreference) ?? "None");
       setNote(facility.description ?? "");
     }
   }, [facility]);
 
+  const capacity = facility?.capacity ?? 0;
+  const bedCount = Number(beds);
+  const bedsError =
+    beds.trim() === "" || !Number.isInteger(bedCount) || bedCount < 0
+      ? "Enter a whole number of beds (0 or more)."
+      : bedCount > capacity
+        ? `Cannot exceed your total capacity of ${capacity} beds.`
+        : "";
+
   const handleSave = () => {
-    if (!facility) return;
-    const total = ROOM_VALUES[privateRooms] + ROOM_VALUES[sharedRooms];
-    updateAvailability.mutate({ availabilityCount: total });
+    if (!facility || bedsError) return;
+    updateAvailability.mutate({ availabilityCount: bedCount });
 
     const currentServices = facility.services ?? [];
     let updatedServices = [...currentServices];
@@ -72,12 +70,7 @@ const Form = () => {
 
   const handleCancel = () => {
     if (!facility) return;
-    const total = facility.availabilityCount ?? 0;
-    const priv = Math.ceil(total / 2);
-    const shared = total - priv;
-    const clamp = (n: number): RoomCount => n <= 0 ? "0" : n === 1 ? "1" : n === 2 ? "2" : "3+";
-    setPrivateRooms(clamp(priv));
-    setSharedRooms(clamp(shared));
+    setBeds(String(facility.availabilityCount ?? 0));
     setMemoryCare(facility.services?.includes("memory_care") ?? false);
     setGenderPreference((facility.genderPreference as GenderPreference) ?? "None");
     setNote(facility.description ?? "");
@@ -102,59 +95,51 @@ const Form = () => {
   return (
     <div className="w-full grow">
       <div className="bg-white mx-10 mb-10 rounded-xl shadow-[0px_1px_2px_0px_#0000000D] border border-solid border-[#09488B0D] p-8 w-full max-w-[672px] flex flex-col gap-10">
-        {/* Private Rooms */}
+        {/* Available Beds */}
         <div className="w-full h-auto flex flex-col gap-4">
           <div className="flex justify-start items-center gap-2">
             <BedRoomIcon />
             <span className="text-sm font-bold text-[#94A3B8] uppercase">
-              Private Rooms Available
+              Available Beds
             </span>
           </div>
-          <div className="grid grid-cols-4 gap-0 rounded-lg overflow-hidden p-1 bg-[#F1F5F9]">
-            {roomOptions.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => setPrivateRooms(opt)}
-                className={`py-3 text-base font-semibold rounded-md transition-colors duration-150 focus:outline-none
-                ${
-                  privateRooms === opt
-                    ? "bg-white text-[#09488B] shadow-[0px_1px_2px_0px_#0000000D]"
-                    : "bg-transparent text-[#64748B] hover:bg-slate-50"
-                }
-              `}
-              >
-                {opt}
-              </button>
-            ))}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setBeds(String(Math.max(0, (Number(beds) || 0) - 1)))}
+              className="w-12 h-12 rounded-lg bg-[#F1F5F9] text-xl font-bold text-[#09488B] hover:bg-slate-200"
+              aria-label="Decrease available beds"
+            >
+              −
+            </button>
+            <input
+              type="number"
+              min={0}
+              max={capacity}
+              value={beds}
+              onChange={(e) => setBeds(e.target.value)}
+              className={`w-28 h-12 text-center text-xl font-bold text-[#0F172A] border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#09488B33] ${bedsError ? "border-red-400" : "border-[#E2E8F0]"}`}
+              aria-label="Available beds"
+            />
+            <button
+              type="button"
+              onClick={() => setBeds(String(Math.min(capacity, (Number(beds) || 0) + 1)))}
+              className="w-12 h-12 rounded-lg bg-[#F1F5F9] text-xl font-bold text-[#09488B] hover:bg-slate-200"
+              aria-label="Increase available beds"
+            >
+              +
+            </button>
+            <span className="text-sm text-[#64748B]">of {capacity} total beds</span>
           </div>
-        </div>
-
-
-        {/* Shared Rooms */}
-        <div className="w-full h-auto flex flex-col gap-4">
-          <div className="flex justify-start items-center gap-2">
-            <SharedRoomIcon />
-            <span className="text-sm font-bold text-[#94A3B8] uppercase">
-              Shared Rooms Available
-            </span>
-          </div>
-          <div className="grid grid-cols-4 gap-0 rounded-lg overflow-hidden p-1 bg-[#F1F5F9]">
-            {roomOptions.map((opt) => (
-                <button
-                key={opt}
-                onClick={() => setSharedRooms(opt)}
-                className={`py-3 text-base font-semibold rounded-md transition-colors duration-150 focus:outline-none
-                    ${
-                        sharedRooms === opt
-                    ? "bg-white text-[#09488B] shadow-[0px_1px_2px_0px_#0000000D]"
-                    : "bg-transparent text-[#64748B] hover:bg-slate-50"
-                }
-                `}
-                >
-                {opt}
-              </button>
-            ))}
-          </div>
+          {capacity === 0 ? (
+            <p className="text-sm text-[#B45309]">
+              Your total bed capacity is not set yet. Add it under{" "}
+              <Link href="/dashboard/facility-profile" className="font-semibold underline">Facility Profile</Link>{" "}
+              before updating availability.
+            </p>
+          ) : bedsError ? (
+            <p className="text-sm text-red-500">{bedsError}</p>
+          ) : null}
         </div>
 
             <div className="w-full h-px border-t border-solid border-[#F1F5F9]" />
@@ -244,7 +229,7 @@ const Form = () => {
             <button onClick={handleCancel} className="w-fit h-auto px-6 py-3 rounded-lg flex justify-center items-center">
                 <p className="font-semibold text-sm text-[#475569]">Cancel</p>
             </button>
-            <button onClick={handleSave} disabled={isSaving || !facility}
+            <button onClick={handleSave} disabled={isSaving || !facility || !!bedsError}
               className="w-fit h-auto px-10 py-3 rounded-lg bg-[#09488B] flex justify-center items-center disabled:opacity-50">
                 <p className="font-bold text-sm text-white uppercase">{isSaving ? 'Saving…' : 'Save Availability'}</p>
             </button>

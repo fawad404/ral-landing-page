@@ -6,6 +6,11 @@ import { APP_ROUTES } from '@/api/endpoints'
 const OtherPages = () => {
   const details = [
     {
+      title: "Update Availability",
+      description: "Change your available bed count",
+      goto: APP_ROUTES.DASHBOARD_AVAILABILITY,
+    },
+    {
       title: "Compliance Center",
       description: "Tasks, incidents & credentials",
       goto: APP_ROUTES.DASHBOARD_COMPLIANCE,

@@ -9,6 +9,17 @@ const STATUS_BADGE: Record<string, string> = {
   rejected: 'bg-red-100 text-red-500',
 };
 
+// A facility is only live (public search, discharge-planner requests) when it
+// is approved AND visible, so pending/rejected ones never show as "Visible".
+function visibility(f: Facility) {
+  if (f.status !== 'approved') {
+    return { label: 'Not live', cls: 'bg-gray-100 text-gray-500', title: 'Only approved facilities appear publicly or receive requests' };
+  }
+  return f.isVisible
+    ? { label: 'Visible', cls: 'bg-green-100 text-green-700', title: 'Live: appears publicly and receives requests' }
+    : { label: 'Hidden', cls: 'bg-gray-100 text-gray-500', title: 'Approved but hidden by admin' };
+}
+
 function FacilityDrawer({ facility, onClose }: { facility: Facility; onClose: () => void }) {
   const addr = facility.address
     ? [facility.address.street, facility.address.city, facility.address.state, facility.address.zipCode, facility.address.country]
@@ -39,8 +50,8 @@ function FacilityDrawer({ facility, onClose }: { facility: Facility; onClose: ()
           {/* Status row */}
           <div className="flex items-center gap-3 flex-wrap">
             <span className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${STATUS_BADGE[facility.status]}`}>{facility.status}</span>
-            <span className={`text-xs font-semibold px-3 py-1 rounded-full ${facility.isVisible ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-              {facility.isVisible ? 'Visible' : 'Hidden'}
+            <span title={visibility(facility).title} className={`text-xs font-semibold px-3 py-1 rounded-full ${visibility(facility).cls}`}>
+              {visibility(facility).label}
             </span>
             {facility.isFlagged && <span className="text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-500">Flagged</span>}
           </div>
@@ -184,8 +195,8 @@ function FacilityRow({ f, onApprove, onReject, onToggle, onView }: {
           : <span className="text-xs text-[#10B981]">✓ OK</span>}
       </td>
       <td className="py-3 px-4">
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${f.isVisible ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-          {f.isVisible ? 'Visible' : 'Hidden'}
+        <span title={visibility(f).title} className={`text-xs font-semibold px-2 py-0.5 rounded-full ${visibility(f).cls}`}>
+          {visibility(f).label}
         </span>
       </td>
       <td className="py-3 px-4">

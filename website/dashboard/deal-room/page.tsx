@@ -266,7 +266,7 @@ function ListingCard({ listing, isOwn, onDelete }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const DealRoomComponent = () => {
-  const { data: myRequest, isLoading: requestLoading } = useMyDealRoomRequest();
+  const { data: myRequest, isLoading: requestLoading, isError: requestError, refetch: refetchRequest, isFetching: requestFetching } = useMyDealRoomRequest();
   const requestMutation = useRequestDealRoomAccess();
   const { data: listings = [], isLoading: listingsLoading, isError: listingsError, refetch } = useDealRoomListings();
   const { data: myListings = [] } = useMyDealRoomListings();
@@ -298,6 +298,16 @@ const DealRoomComponent = () => {
           <div className="flex flex-col items-center gap-4">
             {requestLoading ? (
               <div className="w-[320px] h-14 bg-[#F1F5F9] rounded-xl animate-pulse" />
+            ) : requestError ? (
+              // Don't offer "Request Access" when we simply couldn't load the status:
+              // an approved facility would otherwise look locked out.
+              <div className="w-[320px] px-6 py-4 rounded-xl flex flex-col items-center gap-3 text-center bg-[#F59E0B1A]">
+                <span className="text-sm font-bold text-[#B45309]">Couldn&apos;t check your Deal Room access</span>
+                <button onClick={() => refetchRequest()} disabled={requestFetching}
+                  className="px-6 py-2 bg-[#09488B] rounded-lg text-sm font-bold text-white hover:bg-[#083d77] disabled:opacity-60">
+                  {requestFetching ? "Checking..." : "Try again"}
+                </button>
+              </div>
             ) : statusInfo ? (
               <div className="w-[320px] px-6 py-4 rounded-xl flex flex-col items-center gap-1 text-center" style={{ background: statusInfo.bg }}>
                 <span className="text-sm font-bold" style={{ color: statusInfo.text }}>{statusInfo.label}</span>
