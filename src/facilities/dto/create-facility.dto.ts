@@ -10,6 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { IsUsPhone } from '../../common/validators/us-phone';
 
 export class AddressDto {
   @ApiPropertyOptional() @IsOptional() @IsString() street?: string;
@@ -77,12 +78,12 @@ export class CreateFacilityDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsUsPhone()
   phone?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsUsPhone()
   secondaryPhone?: string;
 
   @ApiPropertyOptional()

@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsEmail, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { IsUsPhone } from '../../common/validators/us-phone';
 import { CaregiverStatus } from '../schemas/caregiver.schema';
 
 export class CreateCaregiverDto {
@@ -20,7 +21,7 @@ export class CreateCaregiverDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsUsPhone()
   phone?: string;
 
   @ApiPropertyOptional()

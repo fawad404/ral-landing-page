@@ -15,6 +15,7 @@ import { RejectRequestDto } from './dto/reject-request.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/schemas/notification.schema';
 import { FacilitiesService } from '../facilities/facilities.service';
+import { FacilityStatus } from '../facilities/schemas/facility.schema';
 
 @Injectable()
 export class DealRoomService {
@@ -30,6 +31,9 @@ export class DealRoomService {
       throw new ForbiddenException('You must have a registered facility to request deal room access');
     }
     const facility = facilities[0];
+    if (facility.status !== FacilityStatus.APPROVED) {
+      throw new ForbiddenException('Your facility must be approved by RAL Connect before requesting Deal Room access');
+    }
 
     const existing = await this.model
       .findOne({ facilityId: facility._id, status: { $in: [DealRoomStatus.PENDING, DealRoomStatus.APPROVED] } })
@@ -83,6 +87,10 @@ export class DealRoomService {
     if (!request) throw new NotFoundException('Request not found');
     if (request.status !== DealRoomStatus.PENDING) {
       throw new ConflictException('Request has already been reviewed');
+    }
+    const facility = await this.facilitiesService.findById(request.facilityId.toString());
+    if (facility.status !== FacilityStatus.APPROVED) {
+      throw new ConflictException('Approve the facility itself before granting Deal Room access');
     }
 
     const updated = await this.model

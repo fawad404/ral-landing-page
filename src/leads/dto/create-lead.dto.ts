@@ -1,4 +1,5 @@
 import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsUsPhone } from '../../common/validators/us-phone';
 import { LeadType } from '../schemas/lead.schema';
 
 export class CreateLeadDto {
@@ -12,7 +13,7 @@ export class CreateLeadDto {
   email: string;
 
   @IsOptional()
-  @IsString()
+  @IsUsPhone()
   phone?: string;
 
   // Facility fields

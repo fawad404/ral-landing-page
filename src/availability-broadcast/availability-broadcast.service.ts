@@ -9,6 +9,7 @@ import { SubmitInterestedDto, SubmitResponseDto } from './dto/submit-response.dt
 import { MailService } from '../mail/mail.service';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { Role } from '../common/enums/role.enum';
+import { Facility, FacilityDocument, FacilityStatus } from '../facilities/schemas/facility.schema';
 
 @Injectable()
 export class AvailabilityBroadcastService {
@@ -18,6 +19,7 @@ export class AvailabilityBroadcastService {
     @InjectModel(AvailabilityRequest.name) private requestModel: Model<AvailabilityRequestDocument>,
     @InjectModel(AvailabilityResponse.name) private responseModel: Model<AvailabilityResponseDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Facility.name) private facilityModel: Model<FacilityDocument>,
     private mailService: MailService,
     private config: ConfigService,
   ) {}
@@ -38,13 +40,12 @@ export class AvailabilityBroadcastService {
     return { requestId };
   }
 
-  async getRequest(requestId: string): Promise<{ contactName: string; phone: string; email: string; preferredArea: string; careTypes: string[]; paymentType: string; moveTimeline: string }> {
+  // Public: anyone with the email link can load this, so the planner's contact
+  // details are left out. They are only returned after an Interested response.
+  async getRequest(requestId: string): Promise<{ preferredArea: string; careTypes: string[]; paymentType: string; moveTimeline: string }> {
     const request = await this.requestModel.findById(requestId).exec();
     if (!request) throw new NotFoundException('Request not found');
     return {
-      contactName: request.contactName,
-      phone: request.phone,
-      email: request.email,
       preferredArea: request.preferredArea,
       careTypes: request.careTypes,
       paymentType: request.paymentType,
@@ -62,7 +63,10 @@ export class AvailabilityBroadcastService {
     await this.responseModel.create({ requestId, responseType: dto.responseType });
   }
 
-  async recordInterestedResponse(requestId: string, dto: SubmitInterestedDto): Promise<void> {
+  async recordInterestedResponse(
+    requestId: string,
+    dto: SubmitInterestedDto,
+  ): Promise<{ contactName: string; organization: string; phone: string; email: string }> {
     const request = await this.requestModel.findById(requestId).exec();
     if (!request) throw new NotFoundException('Request not found');
 
@@ -91,16 +95,30 @@ export class AvailabilityBroadcastService {
     }).catch((err) => {
       this.logger.error('Failed to forward interested response for request ' + requestId, err);
     });
+
+    return {
+      contactName: request.contactName,
+      organization: request.organization,
+      phone: request.phone,
+      email: request.email,
+    };
   }
 
   private async broadcastToFacilities(requestId: string, request: AvailabilityRequestDocument): Promise<void> {
+    // Only owners of facilities that are APPROVED and VISIBLE receive requests;
+    // pending/rejected/hidden facilities are excluded even if the owner's
+    // user account is approved.
+    const ownerIds = await this.facilityModel
+      .distinct('ownerId', { status: FacilityStatus.APPROVED, isVisible: true })
+      .exec();
+
     const facilities = await this.userModel
-      .find({ role: Role.FACILITY, isActive: true, isApproved: true })
+      .find({ _id: { $in: ownerIds }, role: Role.FACILITY, isActive: true, isApproved: true })
       .select('email firstName lastName')
       .exec();
 
     if (!facilities.length) {
-      this.logger.warn('No active facility users to broadcast to — request ' + requestId);
+      this.logger.warn('No approved, visible facilities to broadcast to — request ' + requestId);
       return;
     }
 

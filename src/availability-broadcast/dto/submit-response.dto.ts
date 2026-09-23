@@ -1,3 +1,4 @@
+import { IsUsPhone } from '../../common/validators/us-phone';
 import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class SubmitResponseDto {
@@ -7,7 +8,7 @@ export class SubmitResponseDto {
 export class SubmitInterestedDto {
   @IsNotEmpty() @IsString() facilityName: string;
   @IsNotEmpty() @IsString() contactName: string;
-  @IsNotEmpty() @IsString() phone: string;
+  @IsNotEmpty() @IsUsPhone() phone: string;
   @IsNotEmpty() @IsEmail() email: string;
   @IsOptional() @IsInt() @Min(0) availableBedCount?: number;
   @IsOptional() @IsString() notes?: string;
