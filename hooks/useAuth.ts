@@ -32,7 +32,7 @@ export function useRegister(onSuccess?: () => void) {
   return useMutation({
     mutationFn: (data: RegisterRequest) => authService.register(data),
     onSuccess: () => {
-      toast.success('Account created! Your account is pending admin approval. You will receive access once approved.');
+      toast.success('Account created! The RAL Connect team will review it and email you as soon as you can sign in.');
       onSuccess?.();
     },
     onError: (err: any) => {

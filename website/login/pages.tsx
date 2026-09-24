@@ -103,7 +103,10 @@ export default function LoginComponent() {
           ) : (
             <form onSubmit={registerForm.handleSubmit((d) => registerMutation.mutate(d))} className="flex flex-col gap-4">
               <h2 className="text-xl font-bold text-[#0F172A]">Create account</h2>
-              <p className="text-sm text-[#64748B] -mt-2">Accounts require admin approval before access.</p>
+              <p className="text-sm text-[#64748B] -mt-2">
+                Facility owners: this is the same as becoming a Founding Partner on ralconnect.com. The RAL Connect team
+                reviews every new account and emails you as soon as you can sign in.
+              </p>
 
               <div className="grid grid-cols-2 gap-3">
 
@@ -134,7 +137,7 @@ export default function LoginComponent() {
                   value={registerForm.watch('role') ?? 'facility'}
                   onChange={(v) => registerForm.setValue('role', v as 'facility' | 'vendor')}
                   options={[
-                    { value: 'facility', label: 'Facility Member' },
+                    { value: 'facility', label: 'Facility Owner / Manager' },
                     { value: 'vendor', label: 'Vendor / Partner' },
                   ]}
                 />
