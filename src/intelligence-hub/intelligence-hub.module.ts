@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { IntelligenceHubController } from './intelligence-hub.controller';
+import { ArizonaUpdatesController } from './arizona-updates.controller';
 import { IntelligenceHubService } from './intelligence-hub.service';
 import { FeedIngestionService } from './feed-ingestion.service';
 import { AiProcessingService } from './ai-processing.service';
@@ -16,7 +17,7 @@ import { ScanLog, ScanLogSchema } from './schemas/scan-log.schema';
       { name: ScanLog.name, schema: ScanLogSchema },
     ]),
   ],
-  controllers: [IntelligenceHubController],
+  controllers: [IntelligenceHubController, ArizonaUpdatesController],
   providers: [IntelligenceHubService, FeedIngestionService, AiProcessingService],
   exports: [FeedIngestionService],
 })

@@ -345,6 +345,31 @@ export class IntelligenceHubService implements OnModuleInit {
 
   // ─── CONTENT ITEMS ────────────────────────────────────────────────────────
 
+  // Owner "Arizona Updates" page: admin-approved items only, trimmed to the
+  // fields an owner needs.
+  async getOwnerUpdates(page = 1, limit = 20) {
+    const safeLimit = Math.min(Math.max(limit, 1), 50);
+    const skip = (Math.max(page, 1) - 1) * safeLimit;
+    const filter = {
+      status: { $in: [ContentStatus.APPROVED, ContentStatus.SCHEDULED, ContentStatus.PUBLISHED] },
+    };
+    const [items, total] = await Promise.all([
+      this.contentItemModel
+        .find(filter)
+        .select(
+          'aiHeadline originalTitle aiSummary aiWhatThisMeans aiWhoIsAffected aiOperatorTakeaway ' +
+            'articleUrl sourceName category urgency isArizonaSpecific originalPublishDate publishedAt createdAt',
+        )
+        .sort({ publishedAt: -1, originalPublishDate: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(safeLimit)
+        .lean()
+        .exec(),
+      this.contentItemModel.countDocuments(filter),
+    ]);
+    return { items, total, page: Math.max(page, 1), limit: safeLimit };
+  }
+
   async getContentItems(query: QueryContentDto) {
     const filter: Record<string, any> = {};
 
