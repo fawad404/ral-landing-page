@@ -165,8 +165,22 @@ export default function CaregiversPage() {
           {caregivers.length === 0 && (
             <div className="col-span-3 py-20 flex flex-col items-center gap-3">
               <div className="w-14 h-14 rounded-full bg-[#F1F5F9] flex items-center justify-center text-2xl">👤</div>
-              <p className="text-base font-semibold text-[#94A3B8]">No caregivers found</p>
-              <p className="text-sm text-[#CBD5E1]">Try adjusting your search or filters.</p>
+              {certFilter || availFilter || search ? (
+                <>
+                  <p className="text-base font-semibold text-[#94A3B8]">No caregivers match these filters</p>
+                  <p className="text-sm text-[#CBD5E1]">Try a different search or clear the filters.</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-base font-semibold text-[#475569]">No caregiver profiles are available yet</p>
+                  <p className="text-sm text-[#94A3B8] max-w-md text-center">
+                    Arizona caregivers are joining RAL Connect, and new profiles will appear here as they&apos;re approved.
+                    Need staff sooner?{" "}
+                    <a href="mailto:info@ralconnect.com?subject=Caregiver%20help" className="font-semibold text-[#09488B] hover:underline">Contact us</a>{" "}
+                    and we&apos;ll help.
+                  </p>
+                </>
+              )}
             </div>
           )}
         </div>

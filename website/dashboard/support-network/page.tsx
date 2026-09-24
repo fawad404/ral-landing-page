@@ -1,5 +1,5 @@
 "use client";
-import { ContactButtonIcon, SearchIcon, StarIcon, VerifiedBadgeIcon } from "@/assets";
+import { ContactButtonIcon, SearchIcon, StarIcon } from "@/assets";
 import Header from "@/components/global/header";
 import React, { useState } from "react";
 import { useVisiblePartners, usePartnerCategories } from "@/hooks/usePartners";
@@ -14,9 +14,6 @@ const VendorCard = ({ partner }: { partner: Partner }) => (
       ) : (
         <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm">🤝</div>
       )}
-      <div className="absolute top-3 right-3">
-        <VerifiedBadgeIcon />
-      </div>
     </div>
     {/* Content */}
     <div className="p-5 pb-4 flex flex-col gap-1 flex-1">
@@ -58,7 +55,9 @@ const SupportNetworkComponent = () => {
   const { data: partners = [], isLoading, isError } = useVisiblePartners();
   const { data: categories = [] } = usePartnerCategories();
 
-  const filterOptions = ["All", ...categories];
+  // Only offer categories that have a listed provider (a hidden vendor's
+  // category would otherwise show a filter with nothing behind it).
+  const filterOptions = ["All", ...categories.filter((c) => partners.some((p) => p.category === c))];
 
   const filtered = partners.filter((p) => {
     const matchesFilter = activeFilter === "All" || p.category === activeFilter;
@@ -73,9 +72,13 @@ const SupportNetworkComponent = () => {
   return (
     <div className="w-full h-full flex flex-col gap-8 p-10">
       <Header
-        title="Trusted Support Network"
-        description="Find verified vendors, contractors, and care support professionals."
+        title="Support Network"
+        description="Vendors, contractors and care support providers listed on RAL Connect."
       />
+      <p className="-mt-4 max-w-3xl text-sm text-[#64748B]">
+        The RAL Connect team reviews each listing before it appears here. That review isn&apos;t an endorsement, so check
+        licenses, insurance and references before you hire.
+      </p>
 
       {/* Search */}
       <div className="relative w-full">
@@ -125,8 +128,21 @@ const SupportNetworkComponent = () => {
           ))}
           {filtered.length === 0 && (
             <div className="col-span-3 py-20 flex flex-col items-center gap-3">
-              <p className="text-base font-semibold text-[#94A3B8]">No vendors found</p>
-              <p className="text-sm text-[#CBD5E1]">Try adjusting your search or filter.</p>
+              {partners.length === 0 ? (
+                <>
+                  <p className="text-base font-semibold text-[#475569]">No providers are listed yet</p>
+                  <p className="text-sm text-[#94A3B8] max-w-md text-center">
+                    We&apos;re adding Arizona vendors and service providers. Looking for someone specific?{" "}
+                    <a href="mailto:info@ralconnect.com?subject=Support%20Network%20request" className="font-semibold text-[#09488B] hover:underline">Tell us</a>{" "}
+                    and we&apos;ll try to help.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-base font-semibold text-[#94A3B8]">No providers match your search</p>
+                  <p className="text-sm text-[#CBD5E1]">Try a different search or filter.</p>
+                </>
+              )}
             </div>
           )}
         </div>

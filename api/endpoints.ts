@@ -26,6 +26,9 @@ export const API_ENDPOINTS = {
   FACILITY_ACTIVATE: (id: string) => `/facilities/${id}/activate`,
   FACILITY_DEACTIVATE: (id: string) => `/facilities/${id}/deactivate`,
 
+  // Arizona Updates (facility owners: admin-approved Intelligence Hub items)
+  ARIZONA_UPDATES: '/arizona-updates',
+
   // Partners / Vendors
   PARTNERS: '/partners',
   PARTNERS_CATEGORIES: '/partners/categories',
@@ -168,6 +171,7 @@ export const APP_ROUTES = {
 
   DASHBOARD_COMPLIANCE: '/dashboard/compliance',
   DASHBOARD_CAREGIVERS: '/dashboard/caregivers',
+  DASHBOARD_UPDATES: '/dashboard/updates',
 
   ADMIN_CAREGIVERS: '/admin/caregivers',
 } as const;

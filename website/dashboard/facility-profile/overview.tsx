@@ -87,7 +87,7 @@ const Overview = () => {
           <div className="grid grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-[#334155]">
-                Facility Name
+                Facility Name <span className="ml-1 text-xs font-semibold text-[#EF4444]">Required</span>
               </label>
               <input
                 type="text"
@@ -98,7 +98,7 @@ const Overview = () => {
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-[#334155]">
-                City
+                City <span className="ml-1 text-xs font-semibold text-[#EF4444]">Required</span>
               </label>
               <input
                 type="text"
@@ -123,7 +123,7 @@ const Overview = () => {
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-[#334155]">
-                Capacity
+                Total Beds (capacity) <span className="ml-1 text-xs font-semibold text-[#EF4444]">Required</span>
               </label>
               <input
                 type="number"
@@ -198,10 +198,9 @@ const Overview = () => {
                   </svg>
                 </div>
                 <div className="bg-white px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
-                  <svg width="12" height="12" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M7.95 16.35L4.4 12.8L5.85 11.35L7.95 13.45L12.15 9.25L13.6 10.7L7.95 16.35ZM10 20C7.68333 19.4167 5.77083 18.0875 4.2625 16.0125C2.75417 13.9375 2 11.6333 2 9.1V3L10 0L18 3V9.1C18 11.6333 17.2458 13.9375 15.7375 16.0125C14.2292 18.0875 12.3167 19.4167 10 20Z" fill="#10B981" />
-                  </svg>
-                  <span className="text-xs font-semibold text-[#0F172A]">Map location verified</span>
+                  <span className="text-xs font-semibold text-[#0F172A]">
+                    {city.trim() ? `${city.trim()}, Arizona` : "No location yet. Add your city above."}
+                  </span>
                 </div>
               </div>
             </div>

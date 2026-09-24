@@ -12,10 +12,10 @@ type TabValue = "overview" | "care-services" | "photos" | "policies" | "contact"
 
 const tabs = [
   { label: "Overview", value: "overview" },
-  { label: "Care & Services", value: "care-services" },
-  { label: "Photos", value: "photos" },
-  { label: "Policies", value: "policies" },
-  { label: "Contact", value: "contact" },
+  { label: "Care & Services (optional)", value: "care-services" },
+  { label: "Photos (optional)", value: "photos" },
+  { label: "Policies (optional)", value: "policies" },
+  { label: "Contact (optional)", value: "contact" },
 ];
 
 const FacilityProfileComponent = () => {
@@ -28,6 +28,10 @@ const FacilityProfileComponent = () => {
           title="My Facility Profile"
           description="Manage how your home is represented to prospective residents and staff."
         />
+        <p className="max-w-3xl bg-[#F8FAFC] border border-solid border-[#E2E8F0] rounded-xl px-5 py-3 text-sm text-[#475569]">
+          <strong className="text-[#0F172A]">Required for review:</strong>{" "}facility name, city and total beds on the Overview tab.
+          Everything else is optional. Add services, photos, policies and contacts whenever you&apos;re ready.
+        </p>
         <TabNav
           tabs={tabs}
           activeTab={activeTab}

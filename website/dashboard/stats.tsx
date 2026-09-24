@@ -64,18 +64,22 @@ const Stats = () => {
     return <SetupFacilityCard />;
   }
 
-  const profileStatusLabel =
-    facility.status === 'approved' ? 'Approved'
-    : facility.status === 'pending' ? 'Pending Review'
-    : 'Rejected';
+  // One plain-language listing status (Patrick: "Visible" + "Pending Review"
+  // together was confusing). The account itself is always approved here,
+  // because unapproved accounts can't sign in.
+  const listing =
+    facility.status === 'pending'
+      ? { value: 'In Review', badge: 'RAL team reviewing', css: 'bg-[#F59E0B1A] text-[#B45309]' }
+      : facility.status === 'rejected'
+        ? { value: 'Not Approved', badge: 'Contact support', css: 'bg-[#EF44441A] text-[#EF4444]' }
+        : facility.isVisible
+          ? { value: 'Live', badge: 'Getting requests', css: 'bg-[#10B9811A] text-[#10B981]' }
+          : { value: 'Hidden', badge: 'Not getting requests', css: 'bg-[#F1F5F9] text-[#64748B]' };
 
-  const profileStatusCss =
-    facility.status === 'approved' ? 'bg-[#10B9811A] text-[#10B981]'
-    : facility.status === 'pending' ? 'bg-[#F59E0B1A] text-[#F59E0B]'
-    : 'bg-[#EF44441A] text-[#EF4444]';
-
-  const alertLabel = facility.isFlagged ? 'Flagged' : 'All Clear';
-  const alertCss = facility.isFlagged ? 'bg-[#EF44441A] text-[#EF4444]' : 'bg-[#10B9811A] text-[#10B981]';
+  // Compliance cards only reflect records entered in RAL Connect, so an empty
+  // tracker says "Nothing tracked" instead of sounding like a clean assessment.
+  const NEUTRAL = 'bg-[#F1F5F9] text-[#64748B]';
+  const nothingTracked = (total?: number) => !complianceStats.isLoading && (total ?? 0) === 0;
 
   const openTasks = cs?.tasks.open ?? 0;
   const overdueTasks = cs?.tasks.overdue ?? 0;
@@ -86,8 +90,8 @@ const Stats = () => {
     {
       title: "Open Tasks",
       value: complianceStats.isLoading ? '—' : String(openTasks),
-      text: overdueTasks > 0 ? `${overdueTasks} overdue` : 'On track',
-      textcss: overdueTasks > 0 ? 'bg-[#EF44441A] text-[#EF4444]' : 'bg-[#10B9811A] text-[#10B981]',
+      text: nothingTracked(cs?.tasks.total) ? 'Nothing tracked' : overdueTasks > 0 ? `${overdueTasks} overdue` : 'On track',
+      textcss: nothingTracked(cs?.tasks.total) ? NEUTRAL : overdueTasks > 0 ? 'bg-[#EF44441A] text-[#EF4444]' : 'bg-[#10B9811A] text-[#10B981]',
       icon: (
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#09488B" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -97,8 +101,8 @@ const Stats = () => {
     {
       title: "Credential Alerts",
       value: complianceStats.isLoading ? '—' : String(credAlerts),
-      text: cs?.credentials.expired ? `${cs.credentials.expired} expired` : cs?.credentials.expiringSoon ? `${cs.credentials.expiringSoon} expiring` : 'All valid',
-      textcss: (cs?.credentials.expired ?? 0) > 0 ? 'bg-[#EF44441A] text-[#EF4444]' : (cs?.credentials.expiringSoon ?? 0) > 0 ? 'bg-[#F59E0B1A] text-[#F59E0B]' : 'bg-[#10B9811A] text-[#10B981]',
+      text: nothingTracked(cs?.credentials.total) ? 'Nothing tracked' : cs?.credentials.expired ? `${cs.credentials.expired} expired` : cs?.credentials.expiringSoon ? `${cs.credentials.expiringSoon} expiring` : 'All valid',
+      textcss: nothingTracked(cs?.credentials.total) ? NEUTRAL : (cs?.credentials.expired ?? 0) > 0 ? 'bg-[#EF44441A] text-[#EF4444]' : (cs?.credentials.expiringSoon ?? 0) > 0 ? 'bg-[#F59E0B1A] text-[#F59E0B]' : 'bg-[#10B9811A] text-[#10B981]',
       icon: (
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#09488B" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -106,17 +110,17 @@ const Stats = () => {
       ),
     },
     {
-      title: "Profile Status",
-      value: profileStatusLabel,
-      text: facility.isVisible ? "Visible" : "Hidden",
-      textcss: profileStatusCss,
+      title: "Facility Listing",
+      value: listing.value,
+      text: listing.badge,
+      textcss: listing.css,
       icon: <Stat2Icon />,
     },
     {
       title: "Open Incidents",
       value: complianceStats.isLoading ? '—' : String(openIncidents),
-      text: (cs?.incidents.critical ?? 0) > 0 ? `${cs!.incidents.critical} critical` : openIncidents === 0 ? 'None active' : undefined,
-      textcss: (cs?.incidents.critical ?? 0) > 0 ? 'bg-[#EF44441A] text-[#EF4444]' : 'bg-[#10B9811A] text-[#10B981]',
+      text: nothingTracked(cs?.incidents.total) ? 'Nothing tracked' : (cs?.incidents.critical ?? 0) > 0 ? `${cs!.incidents.critical} critical` : openIncidents === 0 ? 'None active' : undefined,
+      textcss: nothingTracked(cs?.incidents.total) ? NEUTRAL : (cs?.incidents.critical ?? 0) > 0 ? 'bg-[#EF44441A] text-[#EF4444]' : 'bg-[#10B9811A] text-[#10B981]',
       icon: <Stat4Icon />,
     },
   ];

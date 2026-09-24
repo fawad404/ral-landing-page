@@ -8,10 +8,11 @@ import {
   SupportNetworkIcon,
 } from "@/assets";
 import Link from "next/link";
-import React, { useState } from "react";
+import { usePathname } from "next/navigation";
+import React from "react";
 
 const Sidebar = () => {
-  const [selectedItem, setSelectedItem] = useState("Dashboard");
+  const pathname = usePathname();
 
   const menuItems = [
     {
@@ -31,6 +32,20 @@ const Sidebar = () => {
       icon: <FacilityProfileIcon />,
       iconActive: <FacilityProfileIcon fill="#094689" />,
       path: "/dashboard/facility-profile",
+    },
+    {
+      title: "Arizona Updates",
+      icon: (
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#475569" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+        </svg>
+      ),
+      iconActive: (
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#094689" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+        </svg>
+      ),
+      path: "/dashboard/updates",
     },
     {
       title: "Support Network",
@@ -90,17 +105,16 @@ const Sidebar = () => {
         {menuItems.map((item, index) => (
           <Link
             href={item.path}
-            onClick={() => setSelectedItem(item.title)}
             key={index}
-            className={`w-full h-12 flex items-center py-3 px-4 gap-3 ${selectedItem === item.title ? "bg-[#0947871A]" : "bg-white"} rounded-xl hover:bg-[#F1F5F9] cursor-pointer transition-all duration-200`}
+            className={`w-full h-12 flex items-center py-3 px-4 gap-3 ${(item.path === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.path)) ? "bg-[#0947871A]" : "bg-white"} rounded-xl hover:bg-[#F1F5F9] cursor-pointer transition-all duration-200`}
           >
-            {selectedItem === item.title ? (
+            {(item.path === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.path)) ? (
               <>{item.iconActive}</>
             ) : (
               <>{item.icon}</>
             )}
             <span
-              className={`text-base font-medium ${selectedItem === item.title ? "text-[#094689]" : "text-[#475569]"}`}
+              className={`text-base font-medium ${(item.path === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.path)) ? "text-[#094689]" : "text-[#475569]"}`}
             >
               {item.title}
             </span>
@@ -110,7 +124,7 @@ const Sidebar = () => {
       <div className="w-full h-auto bg-[#F8FAFC] border border-solid border-[#E2E8F0] rounded-xl p-4 flex flex-col gap-2">
         <p className="font-bold text-xs text-[#94A3B8]">HELP CENTER</p>
         <p className="font-normal text-sm text-[#475569]">
-          Need assistance with your facility profile?
+          Questions about availability, placement requests, your profile or access? We&apos;re happy to help.
         </p>
         <a
           href="mailto:info@ralconnect.com?subject=RAL%20Connect%20support"

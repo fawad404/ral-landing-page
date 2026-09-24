@@ -2,7 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { useMyFacilities } from "@/hooks/useFacilities";
-import { useComplianceTasks, useStaffCredentials, useComplianceIncidents } from "@/hooks/useCompliance";
+import { useComplianceTasks, useStaffCredentials, useComplianceIncidents, useComplianceStats } from "@/hooks/useCompliance";
 import { APP_ROUTES } from "@/api/endpoints";
 
 function fmtDate(d?: string) {
@@ -24,6 +24,10 @@ const ActivityLogs = () => {
   const credsQ = useStaffCredentials(facilityId, { status: 'expired', limit: 3 });
   const expiringSoonQ = useStaffCredentials(facilityId, { status: 'expiring_soon', limit: 3 });
   const incidentsQ = useComplianceIncidents(facilityId, { status: 'open', limit: 3 });
+
+  const statsQ = useComplianceStats(facilityId);
+  const st = statsQ.data;
+  const nothingTracked = !!st && st.tasks.total + st.credentials.total + st.incidents.total === 0;
 
   const isLoading = facLoading || tasksQ.isLoading || credsQ.isLoading;
 
@@ -104,13 +108,20 @@ const ActivityLogs = () => {
           <div className="py-8 flex justify-center">
             <p className="text-sm text-[#94A3B8]">Set up your facility to see alerts.</p>
           </div>
+        ) : alerts.length === 0 && nothingTracked ? (
+          <div className="py-8 flex flex-col items-center gap-2 text-center px-6">
+            <p className="text-sm font-semibold text-[#475569]">Nothing tracked yet</p>
+            <p className="text-xs text-[#94A3B8] max-w-md">
+              This panel only reflects tasks, staff credentials and incidents you add in the Compliance Center. It isn&apos;t a compliance assessment.
+            </p>
+          </div>
         ) : alerts.length === 0 ? (
           <div className="py-8 flex flex-col items-center gap-2">
             <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#10B981" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-sm font-semibold text-[#10B981]">All clear — no compliance alerts.</p>
-            <p className="text-xs text-[#94A3B8]">No overdue tasks, expired credentials, or open incidents.</p>
+            <p className="text-sm font-semibold text-[#10B981]">No alerts in your tracked records.</p>
+            <p className="text-xs text-[#94A3B8]">No overdue tasks, expired credentials, or open incidents among the records you&apos;ve entered.</p>
           </div>
         ) : (
           alerts.map((a, i) => (

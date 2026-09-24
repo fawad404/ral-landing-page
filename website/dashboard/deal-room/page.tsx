@@ -46,9 +46,9 @@ const conditionColors: Record<ListingCondition, string> = {
 
 // ── Gate pillars ──────────────────────────────────────────────────────────────
 const pillars = [
-  { icon: <SecureIcon />, title: "Secure Environment", subtitle: "Only verified members enter" },
-  { icon: <PeerIcon />, title: "Peer-to-Peer", subtitle: "Direct owner negotiations" },
-  { icon: <VerifiedListingIcon />, title: "Verified Listings", subtitle: "Authentic facility items" },
+  { icon: <SecureIcon />, title: "Members Only", subtitle: "Only owners with approved access see listings" },
+  { icon: <PeerIcon />, title: "Peer-to-Peer", subtitle: "You deal directly with other owners" },
+  { icon: <VerifiedListingIcon />, title: "Owner Listings", subtitle: "Posted by approved RAL Connect owners" },
 ];
 
 const statusConfig = {
@@ -321,8 +321,13 @@ const DealRoomComponent = () => {
           <div className="flex flex-col items-center gap-3 max-w-md text-center">
             <p className="text-[30px] font-bold text-[#0F172A] font-space">Owner Verification Required</p>
             <p className="text-lg font-normal text-[#64748B] leading-relaxed">
-              Access to the Deal Room is restricted to verified facility owners to ensure a secure, high-trust exchange environment.
+              The Deal Room is a private space where Arizona RAL owners list equipment, supplies, real estate and other resources for each other.
             </p>
+          </div>
+          <div className="max-w-xl w-full bg-[#F8FAFC] border border-solid border-[#E2E8F0] rounded-xl px-6 py-4 text-sm text-[#475569] flex flex-col gap-2 text-left">
+            <p><strong className="text-[#0F172A]">What we check:</strong> that your facility listing on RAL Connect is approved. If it&apos;s still in review, we&apos;ll finish that first.</p>
+            <p><strong className="text-[#0F172A]">How long:</strong> the RAL Connect team reviews each request by hand. You&apos;ll see the status on this page.</p>
+            <p><strong className="text-[#0F172A]">Who sees listings:</strong> only owners with approved Deal Room access and the RAL Connect team. Listings are never public.</p>
           </div>
           <div className="flex flex-col items-center gap-4">
             {statusInfo ? (
@@ -366,7 +371,7 @@ const DealRoomComponent = () => {
       {showForm && <CreateListingForm onClose={() => setShowForm(false)} />}
 
       <div className="flex items-start justify-between">
-        <Header title="Deal Room" description="Browse and post listings with other verified facility owners." />
+        <Header title="Deal Room" description="Browse and post listings with other approved RAL Connect owners. Listings are only visible to Deal Room members." />
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-5 py-3 bg-[#09488B] rounded-xl text-sm font-bold text-white hover:bg-[#083d77] transition-colors shrink-0">
           <PlusIcon /> Post Listing
@@ -401,9 +406,13 @@ const DealRoomComponent = () => {
 
       {!listingsLoading && !listingsError && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <p className="text-[#94A3B8] text-sm">No listings found. Be the first to post!</p>
+          <p className="text-[#475569] text-sm font-semibold">No listings yet</p>
+          <p className="text-[#94A3B8] text-sm max-w-md text-center">
+            Owners use the Deal Room to offer things like spare beds and lifts, surplus supplies, or a home for sale or
+            lease. When you have something to offer, you can post it here.
+          </p>
           <button onClick={() => setShowForm(true)} className="text-sm font-semibold text-[#09488B] hover:underline">
-            + Post a listing
+            Post a listing
           </button>
         </div>
       )}

@@ -373,7 +373,8 @@ function TasksTab({ facilityId, filters, setFilters }: { facilityId: string; fil
               ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-10 text-center text-sm text-[#94A3B8]">
-                    No tasks found.
+                    Nothing tracked yet. Add a task to track licensing, inspections or other deadlines.
+                    Status on this page only reflects records you enter in RAL Connect.
                   </td>
                 </tr>
               )
@@ -623,7 +624,7 @@ function IncidentsTab({ facilityId, filters, setFilters }: { facilityId: string;
                   </tr>
                 ))
               : incidents.length === 0
-              ? <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-[#94A3B8]">No incidents logged.</td></tr>
+              ? <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-[#94A3B8]">No incidents logged yet.</td></tr>
               : incidents.map((inc) => {
                   const sv = getIncidentSeverity(inc.severity);
                   const st = getIncidentStatus(inc.status);
@@ -821,7 +822,7 @@ function CredentialsTab({ facilityId, filters, setFilters }: { facilityId: strin
                   </tr>
                 ))
               : creds.length === 0
-              ? <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#94A3B8]">No credentials found.</td></tr>
+              ? <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#94A3B8]">Nothing tracked yet. Add staff credentials to get expiry alerts.</td></tr>
               : creds.map((cred) => {
                   const badge = credStatusBadge(cred.status);
                   const days = daysUntil(cred.expirationDate);
