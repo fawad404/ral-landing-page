@@ -94,7 +94,8 @@ export class MailService {
 
             <div style="padding:28px;">
               <p style="margin:0 0 4px;font-size:13px;color:#64748B;">Hi ${opts.recipientName},</p>
-              <p style="margin:0 0 24px;font-size:15px;color:#0F172A;line-height:1.6;">A discharge / placement professional is seeking immediate RAL availability. Please review the details below and respond <strong>only if you currently have availability and believe you may be a fit.</strong></p>
+              <p style="margin:0 0 24px;font-size:15px;color:#0F172A;line-height:1.6;">A discharge planner or family is looking for RAL availability. Please review the details below and respond <strong>only if you currently have availability and believe you may be a fit.</strong></p>
+              <p style="margin:0 0 24px;font-size:13px;color:#475569;line-height:1.6;">If you click Interested, you'll enter your contact details. We email them to the requester, and you'll see the requester's contact details right away. If you click Not Interested, nothing is shared.</p>
 
               <table style="width:100%;border-collapse:collapse;background:#F8FAFC;border-radius:8px;overflow:hidden;margin-bottom:28px;">
                 <tr>
@@ -227,6 +228,26 @@ export class MailService {
       });
     } catch (err) {
       this.logger.error(`Failed to forward interested response to ${opts.plannerEmail}`, err);
+    }
+  }
+
+  async sendAccountApproved(opts: { to: string; name: string; loginUrl: string }): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: `"RAL Connect" <${this.fromAddress}>`,
+        to: opts.to,
+        subject: 'Your RAL Connect account is approved',
+        html: `
+          <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #E2E8F0;border-radius:12px;">
+            <h2 style="color:#09488B;margin:0 0 8px">You're approved</h2>
+            <p style="color:#475569;font-size:14px;margin:0 0 24px">Hi ${opts.name}, the RAL Connect team has approved your account. You can now sign in with the email and password you chose when you signed up.</p>
+            <a href="${opts.loginUrl}" style="display:inline-block;background:#09488B;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">Sign In</a>
+            <p style="margin:20px 0 0;font-size:12px;color:#94A3B8;">Facility owners: after signing in, choose Update Availability to enter your open beds.</p>
+          </div>
+        `,
+      });
+    } catch (err) {
+      this.logger.error(`Failed to send account approved email to ${opts.to}`, err);
     }
   }
 

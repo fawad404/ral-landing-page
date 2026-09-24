@@ -3,16 +3,20 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { UpdateUserDto, ResetPasswordDto } from './dto/update-user.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private mailService: MailService,
+    private config: ConfigService,
   ) {}
 
   async findAll(filters?: { role?: string; isActive?: boolean; isApproved?: boolean }) {
@@ -72,11 +76,23 @@ export class UsersService {
   }
 
   async approve(id: string): Promise<UserDocument> {
+    const before = await this.userModel.findById(id).select('isApproved').exec();
+    if (!before) throw new NotFoundException('User not found');
+
     const user = await this.userModel
       .findByIdAndUpdate(id, { isApproved: true }, { new: true })
       .select('-password')
       .exec();
     if (!user) throw new NotFoundException('User not found');
+
+    // Self-registered owners and vendors otherwise never hear that they can sign in.
+    if (!before.isApproved) {
+      await this.mailService.sendAccountApproved({
+        to: user.email,
+        name: `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email,
+        loginUrl: this.config.get<string>('DASHBOARD_URL') || 'https://app.ralconnect.com',
+      });
+    }
     return user;
   }
 
